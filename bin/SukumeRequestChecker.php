@@ -1,121 +1,121 @@
 <?php
 
 //--------------------------------------
-// å…±é€šè¨­å®šãƒ»é–¢æ•°ã®èª­ã¿è¾¼ã¿
+// ‹¤’Êİ’èEŠÖ”‚Ì“Ç‚İ‚İ
 //--------------------------------------
 
 require_once("HTTP/Request2.php");
 require_once("Mail.php");
 
-// ãƒ‡ãƒãƒƒã‚°ãƒ•ãƒ©ã‚° true ã«ã™ã‚‹ã¨ãƒ¡ãƒ¼ãƒ«é€ä¿¡ã¯è¡Œã‚ãšçµæœã‚’æ¨™æº–å‡ºåŠ›ã«è¡¨ç¤ºã™ã‚‹ã€‚
+// ƒfƒoƒbƒOƒtƒ‰ƒO true ‚É‚·‚é‚Æƒ[ƒ‹‘—M‚Ís‚í‚¸Œ‹‰Ê‚ğ•W€o—Í‚É•\¦‚·‚éB
 define('DEBUG_FLG', false);
-// ãƒ™ãƒ¼ã‚¹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+// ƒx[ƒXƒfƒBƒŒƒNƒgƒŠ
 define('BASE_DIR', '/home/cybird/SukumeRequestChecker/');
-// è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+// İ’èƒtƒ@ƒCƒ‹‚ÌƒfƒBƒŒƒNƒgƒŠ
 define('CONF_FILE', BASE_DIR.'conf/config.ini');
-// CSVãƒ•ã‚¡ã‚¤ãƒ«ã®ä¸€æ™‚å‡ºåŠ›å…ˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+// CSVƒtƒ@ƒCƒ‹‚Ìˆêo—ÍæƒfƒBƒŒƒNƒgƒŠ
 define('DATA_DIR', 	BASE_DIR.'data/');
-// ãƒ¡ãƒ¼ãƒ«å‡ºåŠ›å…ˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+// ƒ[ƒ‹o—ÍæƒfƒBƒŒƒNƒgƒŠ
 define('MAIL_DIR', 	BASE_DIR.'mail/');
-// ãƒ‡ãƒ‚ã‚¨ã®ã‚«ãƒ©ãƒ è¨­å®š
+// ƒfƒaƒG‚ÌƒJƒ‰ƒ€İ’è
 define('PJ_ID_COL', 0);
 define('PJ_NAME_COL', 1);
 define('PJ_CODE_COL', 2);
 define('PJ_CHARGE_COL', "5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100");
 define('MEMBER_COL', "0, 1, 2, 3, 4");
 define('MEMBER_NAME_COL', 1);
-// ä¸€æ™‚ãƒ•ã‚¡ã‚¤ãƒ«ã®ä¿ç®¡æ—¥æ•°
+// ˆêƒtƒ@ƒCƒ‹‚Ì•ÛŠÇ“ú”
 define('FILE_KEEP_DAYS', 7);
 
 //--------------------------------------
-// åˆæœŸåŒ–å‡¦ç†
+// ‰Šú‰»ˆ—
 //--------------------------------------
 
-// è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿
+// İ’èƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İ
 $ini = get_ini_data();
 
-// æ—¥æœ¬èªãƒ¡ãƒ¼ãƒ«ã‚’é€ã‚‹éš›ã«å¿…è¦
+// “ú–{Œêƒ[ƒ‹‚ğ‘—‚éÛ‚É•K—v
 mb_language("Japanese");
 $mail_body = "";
 
 //--------------------------------------
-// å®Ÿè¡Œã‚¨ãƒªã‚¢
+// ÀsƒGƒŠƒA
 //--------------------------------------
 try {
 	//////////////////////
-	// æ‹…å½“è€…ãƒã‚¹ã‚¿ãƒ¼
+	// ’S“–Òƒ}ƒXƒ^[
 	//////////////////////
 	$prefix = 'member_';
 	$ext = 'csv';
 	$latest_member_array = array();
 	$current_member_array = array();
 
-	// æœ€çµ‚æ›´æ–°æ—¥ã®æ‹…å½“è€…ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å–å¾—ã—ã¦é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
+	// ÅIXV“ú‚Ì’S“–Òƒtƒ@ƒCƒ‹‚ğæ“¾‚µ‚Ä”z—ñ‚ÉŠi”[‚·‚éB
 	$latest_member_file = get_latest_file(DATA_DIR, $prefix, $ext);
 	$latest_member_array = csv2array($latest_member_file);
 
-	// ãƒ‡ãƒ‚ã‚¨ã«ã‚¢ã‚¯ã‚»ã‚¹ã—ã¦ã€CSVã‚’å–å¾—ã—é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
+	// ƒfƒaƒG‚ÉƒAƒNƒZƒX‚µ‚ÄACSV‚ğæ“¾‚µ”z—ñ‚ÉŠi”[‚·‚éB
 	$dezie_member_data = get_dezie_data($ini, $prefix);
 	$current_member_file = save_file($dezie_member_data, $prefix, $ext);
 	$current_member_array = csv2array($current_member_file);
 
-	// æ‹…å½“è€…ãƒã‚¹ã‚¿ãƒ¼ã®å·®åˆ†ã‚’å–å¾—ã™ã‚‹ã€‚
+	// ’S“–Òƒ}ƒXƒ^[‚Ì·•ª‚ğæ“¾‚·‚éB
 	$member_diff = get_member_diff($latest_member_array, $current_member_array);
 	if(!empty($member_diff)) {
-		$mail_body .= "ã€ã‚¹ã‚¯ãƒ¡æ‹…å½“è€…ãƒã‚¹ã‚¿ãƒ¼ã€‘ã«ãŠã„ã¦ä»¥ä¸‹ã®ãƒ¬ã‚³ãƒ¼ãƒ‰ãŒå¤‰æ›´ã•ã‚Œã¾ã—ãŸã€‚\n\n";
+		$mail_body .= "yƒXƒNƒ’S“–Òƒ}ƒXƒ^[z‚É‚¨‚¢‚ÄˆÈ‰º‚ÌƒŒƒR[ƒh‚ª•ÏX‚³‚ê‚Ü‚µ‚½B\n\n";
 		$mail_body .= print_member_diff($member_diff);
 	}
 
 	//////////////////////
-	// PJãƒã‚¹ã‚¿ãƒ¼
+	// PJƒ}ƒXƒ^[
 	//////////////////////
 	$prefix = 'pj_';
 	$ext = 'csv';
 	$latest_pj_array = array();
 	$current_pj_array = array();
 
-	// æœ€çµ‚æ›´æ–°æ—¥ã®PJãƒ•ã‚¡ã‚¤ãƒ«ã‚’å–å¾—ã—ã¦é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
+	// ÅIXV“ú‚ÌPJƒtƒ@ƒCƒ‹‚ğæ“¾‚µ‚Ä”z—ñ‚ÉŠi”[‚·‚éB
 	$latest_pj_file = get_latest_file(DATA_DIR, $prefix, $ext);
 	$latest_pj_array = csv2array($latest_pj_file);
 
-	// ãƒ‡ãƒ‚ã‚¨ã«ã‚¢ã‚¯ã‚»ã‚¹ã—ã¦ã€CSVã‚’å–å¾—ã—é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
+	// ƒfƒaƒG‚ÉƒAƒNƒZƒX‚µ‚ÄACSV‚ğæ“¾‚µ”z—ñ‚ÉŠi”[‚·‚éB
 	$dezie_pj_data = get_dezie_data($ini, $prefix);
 	$current_pj_file = save_file($dezie_pj_data, $prefix, $ext);
 	$current_pj_array = csv2array($current_pj_file);
 
 	//////////////////////
-	// PJãƒã‚¹ã‚¿ãƒ¼
+	// PJƒ}ƒXƒ^[
 	//////////////////////
 	$prefix = 'relation_';
 	$ext = 'json';
 
-	// æœ€çµ‚æ›´æ–°æ—¥ã®é–¢é€£ä»˜ã‘ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å–å¾—ã—ã¦é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
+	// ÅIXV“ú‚ÌŠÖ˜A•t‚¯ƒtƒ@ƒCƒ‹‚ğæ“¾‚µ‚Ä”z—ñ‚ÉŠi”[‚·‚éB
 	$latest_pj_file = get_latest_file(DATA_DIR, $prefix, $ext);
 	$latest_relation_data = file2json($latest_pj_file);
 
-	// ãƒ‡ãƒ‚ã‚¨ã®ãƒ‡ãƒ¼ã‚¿ã‹ã‚‰ç¾åœ¨ã®æ‹…å½“è€…ã¨PJã®é–¢é€£ä»˜ã‘ã‚’ã™ã‚‹ã€‚
+	// ƒfƒaƒG‚Ìƒf[ƒ^‚©‚çŒ»İ‚Ì’S“–Ò‚ÆPJ‚ÌŠÖ˜A•t‚¯‚ğ‚·‚éB
 	$current_relation_data = relate_pj_member($current_pj_array, $current_member_array);
 	save_file(json_encode($current_relation_data), $prefix, $ext);
 
-	// é–¢é€£ä»˜ã‘ã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã®å·®åˆ†ã‚’æŠ½å‡ºã™ã‚‹ã€‚
+	// ŠÖ˜A•t‚¯‚³‚ê‚½ƒf[ƒ^‚Ì·•ª‚ğ’Šo‚·‚éB
 	$pj_diff = get_pj_diff($latest_pj_array, $latest_relation_data, $latest_member_array, $current_pj_array, $current_relation_data, $current_member_array);
 		if(!empty($pj_diff)) {
-		$mail_body .= "ã€ã‚¹ã‚¯ãƒ¡PJãƒã‚¹ã‚¿ãƒ¼ã€‘ã«ãŠã„ã¦ä»¥ä¸‹ã®ãƒ¬ã‚³ãƒ¼ãƒ‰ãŒå¤‰æ›´ã•ã‚Œã¾ã—ãŸã€‚\n\n";
+		$mail_body .= "yƒXƒNƒPJƒ}ƒXƒ^[z‚É‚¨‚¢‚ÄˆÈ‰º‚ÌƒŒƒR[ƒh‚ª•ÏX‚³‚ê‚Ü‚µ‚½B\n\n";
 		$mail_body .= print_pj_diff($pj_diff);
 	}
 
-	// çµæœã‚’ãƒ¬ãƒãƒ¼ãƒˆ
+	// Œ‹‰Ê‚ğƒŒƒ|[ƒg
 	report($ini, $mail_body);
 
 
 
-	// å¤ã„ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‰Šé™¤
+	// ŒÃ‚¢ƒtƒ@ƒCƒ‹‚ğíœ
 	remove_old_file(DATA_DIR);
 } catch(Exception $e) {
 	if(DEBUG_FLG) {
 		print($e->getMessage().PHP_EOL);
 	} else {
-		mail_send($mailto_array, 'ã€SukumeRequestCheckerã€‘ ErrorOccurred.', $e->getMessage());
+		mail_send($mailto_array, 'ySukumeRequestCheckerz ErrorOccurred.', $e->getMessage());
 	}
 
 }
@@ -123,27 +123,27 @@ try {
 
 
 //--------------------------------------
-// privateé–¢æ•°ã‚¨ãƒªã‚¢
+// privateŠÖ”ƒGƒŠƒA
 //--------------------------------------
 
-// ä¿ç®¡ã•ã‚Œã¦ã„ã‚‹æœ€æ–°ã®CSVã¨ã€ãƒ‡ãƒ‚ã‚¨ã‹ã‚‰å–å¾—ã—ãŸCSVã‚’æ¯”è¼ƒã—ã¦å·®åˆ†ã‚’è¿”ã™ã€‚
+// •ÛŠÇ‚³‚ê‚Ä‚¢‚éÅV‚ÌCSV‚ÆAƒfƒaƒG‚©‚çæ“¾‚µ‚½CSV‚ğ”äŠr‚µ‚Ä·•ª‚ğ•Ô‚·B
 function get_member_diff($latest_data_array, $current_data_array) {
 	$title_column = 1;
 	$target = explode(',', MEMBER_COL);
 
-	// ãƒ˜ãƒƒãƒ€è¡Œã¯å¾Œã§é…åˆ—æ·»ãˆå­—ã«ä½¿ã†ã€‚
+	// ƒwƒbƒ_s‚ÍŒã‚Å”z—ñ“Y‚¦š‚Ég‚¤B
 	$header = $current_data_array['header'];
 
-	// ï¼’ã¤ã®é…åˆ—ã‚’æ¯”è¼ƒã—ã¦å·®åˆ†ã‚’æŠ½å‡ºã™ã‚‹ã€‚
+	// ‚Q‚Â‚Ì”z—ñ‚ğ”äŠr‚µ‚Ä·•ª‚ğ’Šo‚·‚éB
 	$result = array();
 
-	// æ–°è¦ãƒ¬ã‚³ãƒ¼ãƒ‰
+	// V‹KƒŒƒR[ƒh
 	$new_record_array = array_diff_key($current_data_array, $latest_data_array);
 	foreach ($new_record_array as $key => $new_record) {
 		$after = array();
 		$result[$key]['title'] = $new_record[$title_column];
 		foreach($new_record as $index => $value) {
-			// å·®åˆ†æŠ½å‡ºå¯¾è±¡ã®ã‚«ãƒ©ãƒ ã®å ´åˆã¯åˆ¥ã®é…åˆ—ã«çµæœã‚’æ ¼ç´ã™ã‚‹ã€‚
+			// ·•ª’Šo‘ÎÛ‚ÌƒJƒ‰ƒ€‚Ìê‡‚Í•Ê‚Ì”z—ñ‚ÉŒ‹‰Ê‚ğŠi”[‚·‚éB
 			if(in_array($index, $target)) {
 				$column = $header[$index];
 				$after[$column] = $new_record[$index];
@@ -152,13 +152,13 @@ function get_member_diff($latest_data_array, $current_data_array) {
 		$result[$key]['after'] = $after;
 	}
 
-	// å‰Šé™¤ãƒ¬ã‚³ãƒ¼ãƒ‰
+	// íœƒŒƒR[ƒh
 	$deleted_record_array = array_diff_key($latest_data_array, $current_data_array);
 	foreach ($deleted_record_array as $key => $deleted_record) {
 		$before = array();
 		$result[$key]['title'] = $deleted_record[$title_column];
 		foreach($deleted_record as $index => $value) {
-			// å·®åˆ†æŠ½å‡ºå¯¾è±¡ã®ã‚«ãƒ©ãƒ ã®å ´åˆã¯åˆ¥ã®é…åˆ—ã«çµæœã‚’æ ¼ç´ã™ã‚‹ã€‚
+			// ·•ª’Šo‘ÎÛ‚ÌƒJƒ‰ƒ€‚Ìê‡‚Í•Ê‚Ì”z—ñ‚ÉŒ‹‰Ê‚ğŠi”[‚·‚éB
 			if(in_array($index, $target)) {
 				$column = $header[$index];
 				$before[$column] = $deleted_record[$index];
@@ -168,30 +168,30 @@ function get_member_diff($latest_data_array, $current_data_array) {
 	}
 
 
-	// ä¸¡æ–¹ã«å­˜åœ¨ã™ã‚‹ãƒ¬ã‚³ãƒ¼ãƒ‰ã®å·®åˆ†ã‚’æŠ½å‡º
-	// ãƒ‡ãƒ‚ã‚¨CSVãƒ¬ã‚³ãƒ¼ãƒ‰æ•°åˆ†ãƒ«ãƒ¼ãƒ—
+	// —¼•û‚É‘¶İ‚·‚éƒŒƒR[ƒh‚Ì·•ª‚ğ’Šo
+	// ƒfƒaƒGCSVƒŒƒR[ƒh”•ªƒ‹[ƒv
 	foreach($current_data_array as $current_data) {
 		if(empty($current_data[0])) continue;
 		$current_id = $current_data[0];
-		// æœ€çµ‚æ›´æ–°CSVãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ¬ã‚³ãƒ¼ãƒ‰æ•°åˆ†ãƒ«ãƒ¼ãƒ—ã€‚
+		// ÅIXVCSVƒtƒ@ƒCƒ‹‚ÌƒŒƒR[ƒh”•ªƒ‹[ƒvB
 		foreach($latest_data_array as $latest_data) {
-			// IDåˆ—ã§çªãåˆã‚ã›ã‚’ã™ã‚‹ã€‚
+			// ID—ñ‚Å“Ë‚«‡‚í‚¹‚ğ‚·‚éB
 			$latest_id = $latest_data[0];
 			if($latest_id === $current_id) {
 				$array_diff = array_diff_assoc($current_data, $latest_data);
 				if(!empty($array_diff)) {
 					$before = array();
 					$after = array();
-					// å·®åˆ†è¦ç´ æ•°åˆ†ãƒ«ãƒ¼ãƒ—
+					// ·•ª—v‘f”•ªƒ‹[ƒv
 					foreach($array_diff as $index => $value) {
-						// å·®åˆ†æŠ½å‡ºå¯¾è±¡ã®ã‚«ãƒ©ãƒ ã®å ´åˆã¯åˆ¥ã®é…åˆ—ã«çµæœã‚’æ ¼ç´ã™ã‚‹ã€‚
+						// ·•ª’Šo‘ÎÛ‚ÌƒJƒ‰ƒ€‚Ìê‡‚Í•Ê‚Ì”z—ñ‚ÉŒ‹‰Ê‚ğŠi”[‚·‚éB
 						if(in_array($index, $target)) {
 							$column = $header[$index];
 							$before[$column] = $latest_data[$index];
 							$after[$column] = $current_data[$index];
 						}
 					}
-					// å·®åˆ†ãŒã‚ã£ãŸã‚‰resuleã«æ ¼ç´ã™ã‚‹ã€‚
+					// ·•ª‚ª‚ ‚Á‚½‚çresule‚ÉŠi”[‚·‚éB
 					if(!empty($before) && !empty($after)) {
 						$result[$current_id]['title'] = $current_data[$title_column];
 						$result[$current_id]['before'] = $before;
@@ -207,12 +207,12 @@ function get_member_diff($latest_data_array, $current_data_array) {
 }
 
 
-// é–¢é€£ä»˜ã‘ã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã®å·®åˆ†ã‚’æŠ½å‡ºã™ã‚‹ã€‚
+// ŠÖ˜A•t‚¯‚³‚ê‚½ƒf[ƒ^‚Ì·•ª‚ğ’Šo‚·‚éB
 function get_pj_diff($latest_pj_array, $latest_relation_data, $latest_member_array, $current_pj_array, $current_relation_data, $current_member_array) {
 	$result = array();
-	// è¿½åŠ 
+	// ’Ç‰Á
 	foreach ($current_relation_data as $id => $current_pj_line) {
-		// æ¯”è¼ƒå¯¾è±¡ãŒä¸¡æ–¹æƒã£ã¦ã„ãªã„ã¨array_diff()ãŒæ©Ÿèƒ½ã—ãªã„ã®ã§ç©ºã®é…åˆ—ã‚’ã¤ãã‚‹ã€‚
+		// ”äŠr‘ÎÛ‚ª—¼•û‘µ‚Á‚Ä‚¢‚È‚¢‚Æarray_diff()‚ª‹@”\‚µ‚È‚¢‚Ì‚Å‹ó‚Ì”z—ñ‚ğ‚Â‚­‚éB
 		if(!isset($latest_relation_data[$id])) {
 			$latest_relation_data[$id] = array();
 		}
@@ -226,9 +226,9 @@ function get_pj_diff($latest_pj_array, $latest_relation_data, $latest_member_arr
 			}
 		}
 	}
-	// å‰Šé™¤
+	// íœ
 	foreach ($latest_relation_data as $id => $latest_relation_line) {
-		// æ¯”è¼ƒå¯¾è±¡ãŒä¸¡æ–¹æƒã£ã¦ã„ãªã„ã¨array_diff()ãŒæ©Ÿèƒ½ã—ãªã„ã®ã§ç©ºã®é…åˆ—ã‚’ã¤ãã‚‹ã€‚
+		// ”äŠr‘ÎÛ‚ª—¼•û‘µ‚Á‚Ä‚¢‚È‚¢‚Æarray_diff()‚ª‹@”\‚µ‚È‚¢‚Ì‚Å‹ó‚Ì”z—ñ‚ğ‚Â‚­‚éB
 		if(!isset($current_relation_data[$id])) {
 			$current_relation_data[$id] = array();
 		}
@@ -247,15 +247,15 @@ function get_pj_diff($latest_pj_array, $latest_relation_data, $latest_member_arr
 }
 
 
-// æ‹…å½“è€…ã¨PJã®é–¢é€£ä»˜ã‘ã‚’ã™ã‚‹ã€‚
+// ’S“–Ò‚ÆPJ‚ÌŠÖ˜A•t‚¯‚ğ‚·‚éB
 function relate_pj_member($current_pj_array, $current_member_array) {
-	// ãƒ¡ãƒ³ãƒãƒ¼ãƒ‡ãƒ¼ã‚¿æ•°åˆ†ãƒ«ãƒ¼ãƒ—
+	// ƒƒ“ƒo[ƒf[ƒ^”•ªƒ‹[ƒv
 	$relation_data = array();
 	foreach ($current_member_array as $id => $member_info) {
 		$relation_data[$id] = array();
-		// PJãƒ‡ãƒ¼ã‚¿æ•°åˆ†ãƒ«ãƒ¼ãƒ—
+		// PJƒf[ƒ^”•ªƒ‹[ƒv
 		foreach($current_pj_array as $pj_info) {
-			// BacklogIDã®ã‚«ãƒ©ãƒ ã‚’æ¤œç´¢
+			// BacklogID‚ÌƒJƒ‰ƒ€‚ğŒŸõ
 			foreach(explode(',', PJ_CHARGE_COL) as $index) {
 				if($id == $pj_info[$index]) {
 					$relation_data[$id][] = $pj_info[PJ_ID_COL];
@@ -267,7 +267,7 @@ function relate_pj_member($current_pj_array, $current_member_array) {
 }
 
 
-// å¯¾è±¡ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã§æœ€æ–°ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å–å¾—ã™ã‚‹ã€‚
+// ‘ÎÛƒfƒBƒŒƒNƒgƒŠ“à‚ÅÅV‚Ìƒtƒ@ƒCƒ‹‚ğæ“¾‚·‚éB
 function get_latest_file($path, $prefix, $ext) {
 	$latest_mtime = 0;
 	$latest_file = '';
@@ -297,36 +297,36 @@ function get_latest_file($path, $prefix, $ext) {
 }
 
 
-// ã‚«ã‚¹ã‚¿ãƒ ã‚¢ãƒ—ãƒªã«ã‚¢ã‚¯ã‚»ã‚¹ã—ã¦ã€CSVã‚’å–å¾—ã—ãƒ•ã‚¡ã‚¤ãƒ«ã«æ ¼ç´ã™ã‚‹ã€‚
+// ƒJƒXƒ^ƒ€ƒAƒvƒŠ‚ÉƒAƒNƒZƒX‚µ‚ÄACSV‚ğæ“¾‚µƒtƒ@ƒCƒ‹‚ÉŠi”[‚·‚éB
 function get_dezie_data($ini, $prefix) {
 	$url = $ini[$prefix.'dezie_url'];
 	$body = "";
 
 	$req = new HTTP_Request2($url);
-	$req->setHeader('allowRedirects-Alive', true);   // ãƒªãƒ€ã‚¤ãƒ¬ã‚¯ãƒˆã®è¨±å¯è¨­å®š(true/false)
-	$req->setHeader('maxRedirects', 3);              // ãƒªãƒ€ã‚¤ãƒ¬ã‚¯ãƒˆã®æœ€å¤§å›æ•°
+	$req->setHeader('allowRedirects-Alive', true);   // ƒŠƒ_ƒCƒŒƒNƒg‚Ì‹–‰Âİ’è(true/false)
+	$req->setHeader('maxRedirects', 3);              // ƒŠƒ_ƒCƒŒƒNƒg‚ÌÅ‘å‰ñ”
 
 	$response = $req->send();
 	if($response->getStatus() == 200) {
 		$body = $response->getBody();
 	}
 
-	// é€šä¿¡ã‚¨ãƒ©ãƒ¼ã€æ¨©é™è¨­å®šã®å¤‰æ›´ãªã©ãŒã‚ã‚‹ã¨ã‚¨ãƒ©ãƒ¼ç”»é¢ãŒè¡¨ç¤ºã•ã‚Œã‚‹ã€‚
+	// ’ÊMƒGƒ‰[AŒ ŒÀİ’è‚Ì•ÏX‚È‚Ç‚ª‚ ‚é‚ÆƒGƒ‰[‰æ–Ê‚ª•\¦‚³‚ê‚éB
 	if(preg_match('/^<!DOCTYPE html>/', $body)) {
-		throw new Exception("ãƒ‡ãƒ‚ã‚¨ã‹ã‚‰ã®ãƒ‡ãƒ¼ã‚¿å–å¾—ã«å¤±æ•—ã—ã¾ã—ãŸã€‚");
+		throw new Exception("ƒfƒaƒG‚©‚ç‚Ìƒf[ƒ^æ“¾‚É¸”s‚µ‚Ü‚µ‚½B");
 	}
 
-	// ãƒ‡ãƒ‚ã‚¨ã‹ã‚‰ã®ãƒ‡ãƒ¼ã‚¿ã« Cookie ã®ãƒ‡ãƒ¼ã‚¿ãŒå…¥ã£ã¦ã—ã¾ã†ã®ã§å‰Šé™¤
+	// ƒfƒaƒG‚©‚ç‚Ìƒf[ƒ^‚É Cookie ‚Ìƒf[ƒ^‚ª“ü‚Á‚Ä‚µ‚Ü‚¤‚Ì‚Åíœ
 	$body = remove_cookie($body);
 
-	// ãƒ‡ãƒ‚ã‚¨ã‹ã‚‰å–å¾—ã—ãŸãƒ¬ã‚³ãƒ¼ãƒ‰ã®ä¸­ã«æ”¹è¡ŒãŒå«ã¾ã‚Œã¦ã„ã‚‹ã€‚
-	// ãƒ¬ã‚³ãƒ¼ãƒ‰ä¸­ã®æ”¹è¡Œã¯ LF ã§è¡Œæœ«ã¯ CR+LF ãªã®ã§å‰è€…ã ã‘<br>ã«ç½®æ›ã™ã‚‹ã€‚
+	// ƒfƒaƒG‚©‚çæ“¾‚µ‚½ƒŒƒR[ƒh‚Ì’†‚É‰üs‚ªŠÜ‚Ü‚ê‚Ä‚¢‚éB
+	// ƒŒƒR[ƒh’†‚Ì‰üs‚Í LF ‚Ås––‚Í CR+LF ‚È‚Ì‚Å‘OÒ‚¾‚¯<br>‚É’uŠ·‚·‚éB
 	$body = lf2br($body);
 
 	return $body;
 }
 
-// CSVãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã¿é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
+// CSVƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚İ”z—ñ‚ÉŠi”[‚·‚éB
 function csv2array($path) {
 	$fp = fopen($path, "r");
 	$csv_data = array();
@@ -334,10 +334,10 @@ function csv2array($path) {
 
 	while (($line = fgetcsv($fp)) !== false) {
 		if($count === 1) {
-			// 1è¡Œã‚ã‚’ãƒ˜ãƒƒãƒ€ã¨ã—ã¦æ ¼ç´
+			// 1s‚ß‚ğƒwƒbƒ_‚Æ‚µ‚ÄŠi”[
 			$csv_data['header'] = $line;
 		} else {
-			// BackLogç™»éŒ²ID or ID ã‚’ã‚­ãƒ¼ã«ã™ã‚‹ã€‚
+			// BackLog“o˜^ID or ID ‚ğƒL[‚É‚·‚éB
 			$id = trim($line[0]);
 			$csv_data[$id] = $line;
 		}
@@ -349,7 +349,7 @@ function csv2array($path) {
 }
 
 
-// jsonãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿è¾¼ã‚“ã§jsonã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«ã™ã‚‹ã€‚
+// jsonƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İ‚ñ‚ÅjsonƒIƒuƒWƒFƒNƒg‚É‚·‚éB
 function file2json($path) {
 	$fp = fopen($path, 'r');
 	$json_data = json_decode(fread($fp, filesize($path)), true);
@@ -358,7 +358,7 @@ function file2json($path) {
 
 
 function save_file($body, $prefix, $ext) {
-	// å±¥æ­´ä¿å­˜ã®ãŸã‚ä¸€æ—¦ãƒ•ã‚¡ã‚¤ãƒ«ã«å‡ºåŠ›ã™ã‚‹ã€‚
+	// —š—ğ•Û‘¶‚Ì‚½‚ßˆê’Uƒtƒ@ƒCƒ‹‚Éo—Í‚·‚éB
 	$output_file = DATA_DIR.$prefix.date("YmdHis").'.'.$ext;
 	$fp = fopen($output_file, "w");
 	fwrite($fp, $body);
@@ -368,7 +368,7 @@ function save_file($body, $prefix, $ext) {
 }
 
 
-// å·®åˆ†ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ¡ãƒ¼ãƒ«æœ¬æ–‡ç”¨ã«å‡ºåŠ›ã™ã‚‹ã€‚
+// ·•ªƒf[ƒ^‚ğƒ[ƒ‹–{•¶—p‚Éo—Í‚·‚éB
 function print_member_diff($diff) {
 	$mail_body = '';
 	foreach ($diff as $id => $value) {
@@ -379,22 +379,22 @@ function print_member_diff($diff) {
 		$after  = array_key_exists('after', $value) ? $value['after'] : false;
 
 		if(empty($before) && !empty($after)) {
-			// æ–°è¦
-			$mail_body .= 'â– ' . $title . 'ã€æ–°è¦ã€‘' . PHP_EOL;
+			// V‹K
+			$mail_body .= '¡' . $title . 'yV‹Kz' . PHP_EOL;
 			foreach ($after as $column => $value) {
 				$mail_body .= $column.': '.$after[$column].PHP_EOL;
 			}
 		} elseif(!empty($before) && empty($after)) {
-			// å‰Šé™¤
-			$mail_body .= 'â– ' . $title . 'ã€å‰Šé™¤ã€‘' . PHP_EOL;
+			// íœ
+			$mail_body .= '¡' . $title . 'yíœz' . PHP_EOL;
 			foreach ($before as $column => $value) {
 				$mail_body .= $column.': '.$before[$column].PHP_EOL;
 			}
 		} else {
-			// å¤‰æ›´
-			$mail_body .= 'â– ' . $title . 'ã€å¤‰æ›´ã€‘' . PHP_EOL;
+			// •ÏX
+			$mail_body .= '¡' . $title . 'y•ÏXz' . PHP_EOL;
 			foreach ($before as $column => $value) {
-				$mail_body .= $column.': '.$before[$column].' â†’ '.$after[$column].PHP_EOL;
+				$mail_body .= $column.': '.$before[$column].' ¨ '.$after[$column].PHP_EOL;
 			}
 		}
 
@@ -404,19 +404,19 @@ function print_member_diff($diff) {
 }
 
 
-// å·®åˆ†ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ¡ãƒ¼ãƒ«æœ¬æ–‡ç”¨ã«å‡ºåŠ›ã™ã‚‹ã€‚
+// ·•ªƒf[ƒ^‚ğƒ[ƒ‹–{•¶—p‚Éo—Í‚·‚éB
 function print_pj_diff($pj_diff) {
 	$mail_body = '';
 	foreach ($pj_diff as $id => $record) {
-		$mail_body .= 'â– ' . $id . PHP_EOL;
+		$mail_body .= '¡' . $id . PHP_EOL;
 		if(array_key_exists('add', $record)) {
 			foreach ($record['add'] as $value) {
-				$mail_body .= 'è¿½åŠ : ' . $value . PHP_EOL;
+				$mail_body .= '’Ç‰Á: ' . $value . PHP_EOL;
 			}
 		}
 		if(array_key_exists('del', $record)) {
 			foreach ($record['del'] as $value) {
-				$mail_body .= 'å‰Šé™¤: ' . $value . PHP_EOL;
+				$mail_body .= 'íœ: ' . $value . PHP_EOL;
 			}
 		}
 		$mail_body .= PHP_EOL.PHP_EOL;
@@ -426,22 +426,22 @@ function print_pj_diff($pj_diff) {
 }
 
 
-// è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã®èª­ã¿è¾¼ã¿ã€‚å¯¾è±¡ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã® *.ini ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å…¨ã¦èª­ã¿è¾¼ã¿é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
+// İ’èƒtƒ@ƒCƒ‹‚Ì“Ç‚İ‚İB‘ÎÛƒfƒBƒŒƒNƒgƒŠ“à‚Ì *.ini ƒtƒ@ƒCƒ‹‚ğ‘S‚Ä“Ç‚İ‚İ”z—ñ‚ÉŠi”[‚·‚éB
 function get_ini_data() {
 	if(is_file(CONF_FILE) && preg_match("/.*\.ini$/", CONF_FILE) == true) {
 		$ini_data = parse_ini_file(CONF_FILE);
 	} else {
-		throw new Exception("è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚ªãƒ¼ãƒ—ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸã€‚");
+		throw new Exception("İ’èƒtƒ@ƒCƒ‹‚ÌƒI[ƒvƒ“‚É¸”s‚µ‚Ü‚µ‚½B");
 		return false;
 	}
-	// ã‚­ãƒ¼æ–‡å­—åˆ—ã§ã‚½ãƒ¼ãƒˆ
+	// ƒL[•¶š—ñ‚Åƒ\[ƒg
 	ksort($ini_data);
 
 	return $ini_data;
 }
 
 
-// å¯¾è±¡ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã§ä¿ç®¡æ—¥æ•°ã‚’éããŸãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‰Šé™¤ã™ã‚‹ã€‚
+// ‘ÎÛƒfƒBƒŒƒNƒgƒŠ“à‚Å•ÛŠÇ“ú”‚ğ‰ß‚¬‚½ƒtƒ@ƒCƒ‹‚ğíœ‚·‚éB
 function remove_old_file($path) {
 	$ext_array = array('csv', 'json');
 	$limit_time = time() -  (FILE_KEEP_DAYS * 24 * 60 * 60);
@@ -456,21 +456,21 @@ function remove_old_file($path) {
 }
 
 
-// "Set-Cookie: " ã‹ã‚‰å§‹ã¾ã‚‹è¡Œã‚’å‰Šé™¤ã™ã‚‹ã€‚
+// "Set-Cookie: " ‚©‚çn‚Ü‚és‚ğíœ‚·‚éB
 function remove_cookie($str) {
 	$str = preg_replace("/^Set-Cookie: .*\n/m", "", $str);
 	return $str;
 }
 
 
-// LFã®ã¿ã®æ”¹è¡Œã‚’<br>ã«ç½®æ›ã™ã‚‹ã€‚CR+LF ã®å ´åˆã¯ç½®æ›ã—ãªã„ã€‚
+// LF‚Ì‚İ‚Ì‰üs‚ğ<br>‚É’uŠ·‚·‚éBCR+LF ‚Ìê‡‚Í’uŠ·‚µ‚È‚¢B
 function lf2br($str) {
 	$str = preg_replace("/([^\r])\n+/", "\\1<br>", $str);
 	return $str;
 }
 
 
-// åˆ†å‰²å¯¾è±¡ã®æ–‡å­—åˆ—ã‚’ explode() ã—ã¦ã‹ã‚‰ trim() ã™ã‚‹ã€‚
+// •ªŠ„‘ÎÛ‚Ì•¶š—ñ‚ğ explode() ‚µ‚Ä‚©‚ç trim() ‚·‚éB
 function explode_with_trim($delim, $str) {
 	$array = explode($delim, $str);
 	$array_trimed = array();
@@ -482,7 +482,7 @@ function explode_with_trim($delim, $str) {
 }
 
 
-// ãƒ¡ãƒ¼ãƒ«æœ¬æ–‡ã«ãƒ•ãƒƒã‚¿ã‚’è¿½åŠ ã™ã‚‹
+// ƒ[ƒ‹–{•¶‚Éƒtƒbƒ^‚ğ’Ç‰Á‚·‚é
 function add_mail_footer($mail_body) {
 	$mail_body .= "\n\n\n";
 	$mail_body .= "---------\n";
@@ -491,36 +491,36 @@ function add_mail_footer($mail_body) {
 }
 
 
-// çµæœã‚’ãƒ¬ãƒãƒ¼ãƒˆ
+// Œ‹‰Ê‚ğƒŒƒ|[ƒg
 function report($ini, $mail_body) {
 	if(!empty($mail_body)) {
-		// å¤‰æ•°åˆæœŸåŒ–
+		// •Ï”‰Šú‰»
 		$mailto_array		= array();
 		$mail_subject		= '';
 
 		// Subject
 		$mail_subject = $ini['mail_subject'];
-		// è¡Œæœ«ã®ã‚¿ãƒ–ã‚’æ”¹è¡Œã«ç½®æ›
+		// s––‚Ìƒ^ƒu‚ğ‰üs‚É’uŠ·
 		$mail_body = preg_replace("/\t\n/m", "\n", $mail_body);
-		// ãƒ•ãƒƒã‚¿
+		// ƒtƒbƒ^
 		$mail_body = add_mail_footer($mail_body);
-		// é€ä¿¡å…ˆã¯è¤‡æ•°è¨­å®šã•ã‚Œã¦ã„ã‚‹å ´åˆãŒã‚ã‚‹
+		// ‘—Mæ‚Í•¡”İ’è‚³‚ê‚Ä‚¢‚éê‡‚ª‚ ‚é
 		$mailto_array = explode_with_trim(",", $ini['mailto']);
-		// ãƒ¡ãƒ¼ãƒ«é€ä¿¡
+		// ƒ[ƒ‹‘—M
 		if(DEBUG_FLG) {
 			mail_send_debug($mailto_array, $mail_subject, $mail_body);
 		} else {
 			mail_send($mailto_array, $mail_subject, $mail_body);
 		}
 	} else {
-		print("å‰å›ã‹ã‚‰ã®å·®åˆ†ã¯ã‚ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚" . PHP_EOL);
+		print("‘O‰ñ‚©‚ç‚Ì·•ª‚Í‚ ‚è‚Ü‚¹‚ñ‚Å‚µ‚½B" . PHP_EOL);
 	}
 }
 
 
-// ãƒ¡ãƒ¼ãƒ«é€ä¿¡
+// ƒ[ƒ‹‘—M
 function mail_send($mailto_array, $mail_subject, $mail_body) {
-	// ã“ã‚Œã‚’æŒ‡å®šã—ãªã„ã¨mb_encode_mimeheader()ã§æ­£ã—ãã‚¨ãƒ³ã‚³ãƒ¼ãƒ‰ã•ã‚Œãªã„
+	// ‚±‚ê‚ğw’è‚µ‚È‚¢‚Æmb_encode_mimeheader()‚Å³‚µ‚­ƒGƒ“ƒR[ƒh‚³‚ê‚È‚¢
 	mb_language('ja');
 	mb_internal_encoding('ISO-2022-JP');
 	$params = array(
@@ -534,20 +534,20 @@ function mail_send($mailto_array, $mail_subject, $mail_body) {
 	$mailObject = Mail::factory("smtp", $params);
 	$headers = array(
 		"From" => "nobody@cybird.co.jp",
-		"Subject" => mb_encode_mimeheader(mb_convert_encoding($mail_subject, 'ISO-2022-JP', "UTF-8"))
+		"Subject" => mb_encode_mimeheader(mb_convert_encoding($mail_subject, 'ISO-2022-JP', "SJIS"))
 	);
-	$mail_body = mb_convert_kana($mail_body, "K", "UTF-8");
-	$mail_body = mb_convert_encoding($mail_body, "ISO-2022-JP", "UTF-8");
+	$mail_body = mb_convert_kana($mail_body, "K", "SJIS");
+	$mail_body = mb_convert_encoding($mail_body, "ISO-2022-JP", "SJIS");
 	$mailObject -> send($mailto_array, $headers, $mail_body);
-	// å…ƒã«æˆ»ã™
-	mb_internal_encoding('UTF-8');
+	// Œ³‚É–ß‚·
+	mb_internal_encoding('SJIS');
 }
 
 
-// ãƒ¡ãƒ¼ãƒ«é€ä¿¡ã®ãƒ†ã‚¹ãƒˆã¨ã—ã¦ãƒ•ã‚¡ã‚¤ãƒ«ã«å‡ºåŠ›ã™ã‚‹
+// ƒ[ƒ‹‘—M‚ÌƒeƒXƒg‚Æ‚µ‚Äƒtƒ@ƒCƒ‹‚Éo—Í‚·‚é
 function mail_send_debug($mailto_array, $mail_subject, $mail_body) {
 	$out = "";
-	// ãƒ‡ãƒ¼ã‚¿æ•´å½¢
+	// ƒf[ƒ^®Œ`
 	$out .= "<mailto>\n";
 	foreach($mailto_array as $mailto) {
 		$out .= $mailto.", ";
@@ -560,7 +560,7 @@ function mail_send_debug($mailto_array, $mail_subject, $mail_body) {
 	$out .= $mail_body;
 	$out .= "";
 
-	// æ¨™æº–å‡ºåŠ›
+	// •W€o—Í
 	print($out);
 
 	return true;
