@@ -42,6 +42,9 @@ class Main {
       $relation->get_diff();
       $this->mail_body .= $relation->print_diff();
 
+      // BackLogIDが入力されているにもかかわらず担当者名が未入力のデータを検出する。
+      $this->mail_body .= $relation->validate();
+
       // レポート
       $report->out( $this->mail_body );
 

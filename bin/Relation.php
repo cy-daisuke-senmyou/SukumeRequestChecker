@@ -15,7 +15,8 @@ class Relation {
   private $pj_name_col = 1;
   private $pj_code_col = 2;
   private $member_name_col = 1;
-  private $subject = "【スクメ担当者の割り当て】が変更されました。\n\n";
+  private $subject_diff     = "【スクメ担当者の割り当て】が変更されました。\n\n";
+  private $subject_validate = "【不正な担当者データ】が検出されました。\n\n";
 
   private $latest_relation_data = array();
   private $current_relation_data = array();
@@ -35,6 +36,28 @@ class Relation {
     $this->project = $project;
     return true;
   }
+
+  // BackLogIDが入力されているにもかかわらず担当者名が未入力のデータを検出する。
+  public function validate() {
+    $mail_body = '';
+    // PJデータ数分ループ
+    foreach( $this->project->current_array as $pj_info ) {
+      // BacklogIDのカラムを検索
+      foreach($this->relate_col as $index_id) {
+        // ID列の次が担当者名
+        $index_name = $index_id + 1;
+        if( !empty($pj_info[$index_id]) && empty($pj_info[$index_name]) ) {
+          $mail_body .= $pj_info[$this->pj_code_col] . '(' . $pj_info[$this->pj_name_col] . ')' . PHP_EOL;
+          continue;
+        }
+      }
+    }
+    if(!empty($mail_body)) {
+      $mail_body = $this->subject_validate . $mail_body . PHP_EOL.PHP_EOL;
+    }
+    return $mail_body;
+  }
+
 
   public function get_diff() {
     // 最終更新日の関連付けファイルを取得して配列に格納する。
@@ -57,7 +80,7 @@ class Relation {
   	$mail_body = '';
 
     if( !empty($this->diff) ) {
-  		$mail_body .= $this->subject;
+  		$mail_body .= $this->subject_diff;
 
     	foreach ($this->diff as $id => $record) {
     		$mail_body .= '■' . $id . PHP_EOL;
