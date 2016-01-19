@@ -16,7 +16,7 @@ class Relation {
   private $pj_code_col = 2;
   private $member_name_col = 1;
   private $subject_diff     = "【スクメ担当者の割り当て】が変更されました。\n\n";
-  private $subject_validate = "【不正な担当者データ】が検出されました。\n\n";
+  private $subject_validate = "【スクメPJマスター】において不正な担当者データが検出されました。\n\n";
 
   private $latest_relation_data = array();
   private $current_relation_data = array();

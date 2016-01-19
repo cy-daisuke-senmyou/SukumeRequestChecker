@@ -149,6 +149,7 @@ class Master {
     				$mail_body .= $column.': '.$before[$column].' Å® '.$after[$column].PHP_EOL;
     			}
     		}
+        $mail_body .= PHP_EOL;
       }
     	$mail_body .= PHP_EOL.PHP_EOL;
     }

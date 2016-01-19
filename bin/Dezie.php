@@ -48,7 +48,7 @@ class Dezie {
 
   // LFのみの改行を<br>に置換する。CR+LF の場合は置換しない。
   private function lf2br($str) {
-  	$str = preg_replace("/([^\r])\n+/", "\\1<br>", $str);
+  	$str = preg_replace("/([^\r])\n+/", "\\1, ", $str);
   	return $str;
   }
 
