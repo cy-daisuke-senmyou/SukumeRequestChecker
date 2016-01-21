@@ -55,7 +55,7 @@ class Master {
   		$diff[$key]['title'] = $new_record[$this->title_col];
   		foreach($new_record as $index => $value) {
   			// ·•ª’Šo‘ÎÛ‚ÌƒJƒ‰ƒ€‚Ìê‡‚Í•Ê‚Ì”z—ñ‚ÉŒ‹‰Ê‚ğŠi”[‚·‚éB
-  			if(in_array($index, $target)) {
+  			if(in_array($index, $this->target_col)) {
   				$column = $header[$index];
   				$after[$column] = $new_record[$index];
   			}
