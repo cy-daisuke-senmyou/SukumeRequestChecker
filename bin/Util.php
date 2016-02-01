@@ -15,13 +15,7 @@ class Util {
   	}
 
   	if($debug) {
-  		if($prefix === 'member_') {
-  			return '/home/cybird/SukumeRequestChecker/data/member_for_test.csv';
-  		} elseif($prefix === 'pj_') {
-  			return '/home/cybird/SukumeRequestChecker/data/pj_for_test.csv';
-  		} else {
-  			return '/home/cybird/SukumeRequestChecker/data/relation_for_test.json';
-  		}
+			return "/home/cybird/SukumeRequestChecker/data/{$prefix}for_test.{$ext}";
   	}
 
   	if(empty($latest_file)) {
@@ -33,9 +27,13 @@ class Util {
 
   // CSVファイルを読み込み配列に格納する。
   public static function csv2array($path) {
-  	$fp = fopen($path, "r");
   	$csv_data = array();
   	$count = 1;
+
+    $fp = fopen($path, "r");
+    if( $fp === false ) {
+      throw new Exception("Can't open file.", 1);
+    }
 
   	while (($line = fgetcsv($fp)) !== false) {
   		if($count === 1) {
