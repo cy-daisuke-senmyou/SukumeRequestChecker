@@ -15,7 +15,7 @@ class Util {
   	}
 
   	if($debug) {
-			return "/home/cybird/SukumeRequestChecker/data/{$prefix}for_test.{$ext}";
+			return  "$path/{$prefix}for_test.{$ext}";
   	}
 
   	if(empty($latest_file)) {
@@ -49,6 +49,12 @@ class Util {
   	fclose($fp);
 
   	return $csv_data;
+  }
+
+  // １列だけのCSVから配列を生成
+  public static function simple_csv2array($path) {
+    $csv_data = file($path, FILE_IGNORE_NEW_LINES);
+    return $csv_data;
   }
 
   // jsonファイルから読み込んでjsonオブジェクトにする。

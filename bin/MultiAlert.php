@@ -4,7 +4,8 @@ require_once("Util.php");
 
 class MultiAlert {
   private $prefix = 'multialert_';
-	private $ext = 'json';
+  private $mode = '';
+	private $ext = 'csv';
   private $config;
   private $project;
   private $diff = array();
@@ -27,16 +28,20 @@ class MultiAlert {
     return true;
   }
 
+  public function set_mode( $mode ) {
+    $this->mode = $mode . '_';
+    return true;
+  }
+
   public function get_diff() {
     // 最終更新日の関連付けファイルを取得して配列に格納する。
     $debug = $this->config->get_param('debug');
     $data_dir = $this->config->get_param('base_dir') . $this->config->get_param('data_dir');
-    $latest_file = Util::get_latest_file($data_dir, $this->prefix, $this->ext, $debug);
-    $this->latest_array = Util::file2json($latest_file);
+    $latest_file = Util::get_latest_file($data_dir, $this->prefix . $this->mode, $this->ext, $debug);
+    $this->latest_array = Util::simple_csv2array($latest_file);
 
     // デヂエのデータから現在の担当者とPJの関連付けをする。
-    $contents = array();
-    $all = array();
+    $ml_list = array();
     foreach( $this->project->current_array as $key => $pj_row ) {
       if($key === 'header') continue;
       $division = $pj_row[$this->division_col];
@@ -46,19 +51,18 @@ class MultiAlert {
         $ml = trim(mb_convert_kana($ml, "s"));
         $ml = trim($ml);
         if(empty($ml)) continue;
-        // コンテンツ事業部プロジェクト
-        if($division == '1') {
-          $contents[] = $ml;
+        if( $this->mode == 'all_') {
+          // 全社向け
+          $ml_list[] = $ml;
+        } elseif( $this->mode == 'contents_' && $division == '1' ) {
+          // コンテンツ事業部プロジェクト
+          $ml_list[] = $ml;
         }
-        // 全社
-        $all[] = $ml;
       }
     }
-    sort($contents);
-    sort($all);
-    $this->current_array['contents'] = array_unique($contents);
-    $this->current_array['all'] = array_unique($all);
-    Util::save_file( json_encode($this->current_array), $data_dir, $this->prefix, $this->ext);
+    sort($ml_list);
+    $this->current_array = array_unique($ml_list);
+    Util::save_file( implode(PHP_EOL, $this->current_array), $data_dir, $this->prefix . $this->mode, $this->ext);
 
     // 関連付けされたデータの差分を抽出する。
   	return $this->compare();
@@ -66,11 +70,19 @@ class MultiAlert {
 
   // 関連付けされたデータの差分を抽出する。
   private function compare() {
-    // 差分の内容は問わない、差分があるかどうかだけ判定する。
-    $this->diff += array_diff( $this->latest_array['contents'], $this->current_array['contents'] );
-    $this->diff += array_diff( $this->current_array['contents'], $this->latest_array['contents'] );
-    $this->diff += array_diff( $this->latest_array['all'], $this->current_array['all'] );
-    $this->diff += array_diff( $this->current_array['all'], $this->latest_array['all'] );
+    // 新規
+    $new_record_array = array_diff( $this->current_array, $this->latest_array );
+    if( !empty($new_record_array) ) {
+      $this->diff['new'] = $new_record_array;
+    }
+
+    // 削除レコード
+  	$deleted_record_array = array_diff($this->latest_array, $this->current_array);
+    if( !empty($deleted_record_array) ) {
+      $this->diff['del'] = $deleted_record_array;
+    }
+
+    return true;
   }
 
   // 差分データをメール本文用に出力する。
@@ -78,22 +90,27 @@ class MultiAlert {
     $mail_body = '';
 
     if( !empty($this->diff) ) {
-      $mail_body .= $this->subject;
 
-      // 全社
-      $mail_body .= '■全社向け複数コンテンツ障害' . PHP_EOL;
-      foreach( $this->current_array['all'] as $ml ) {
-        $mail_body .= $ml . PHP_EOL;
+      if( $this->mode == 'all_') {
+        // 全社
+        $mail_body .= $this->subject;
+        $mail_body .= '■全社向け複数コンテンツ障害' . PHP_EOL;
+      } else {
+        // コンテンツ事業部
+        $mail_body .= '■コンテンツ事業部向け複数コンテンツ障害' . PHP_EOL;
       }
-      $mail_body .= PHP_EOL;
 
-      // コンテンツ事業部向け
-      $mail_body .= '■コンテンツ事業部向け複数コンテンツ障害' . PHP_EOL;
-      foreach( $this->current_array['contents'] as $ml ) {
-        $mail_body .= $ml . PHP_EOL;
+      foreach( $this->diff['new'] as $ml ) {
+        $mail_body .= '追加: ' . $ml . PHP_EOL;
+      }
+
+      foreach( $this->diff['del'] as $ml ) {
+        $mail_body .= '削除: ' . $ml . PHP_EOL;
       }
       $mail_body .= PHP_EOL;
     }
+    $mail_body .= PHP_EOL;
+
     return $mail_body;
 
   }
