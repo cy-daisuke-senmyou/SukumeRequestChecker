@@ -53,7 +53,7 @@ class Report {
   	);
   	$mailObject = Mail::factory("smtp", $params);
   	$headers = array(
-  		"From" => "nobody@cybird.co.jp",
+  		"From" => "noreply@cybird.ne.jp",
       "To" => implode(',', $mailto_array),
   		"Subject" => mb_encode_mimeheader(mb_convert_encoding($mail_subject, 'ISO-2022-JP', "SJIS"))
   	);
