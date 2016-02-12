@@ -107,9 +107,8 @@ class MultiAlert {
       foreach( $this->diff['del'] as $ml ) {
         $mail_body .= 'çÌèú: ' . $ml . PHP_EOL;
       }
-      $mail_body .= PHP_EOL;
+      $mail_body .= PHP_EOL.PHP_EOL;
     }
-    $mail_body .= PHP_EOL;
 
     return $mail_body;
 
