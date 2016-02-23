@@ -53,12 +53,14 @@ class Main {
       $multi_alert = new MultiAlert( $config );
       $multi_alert->set_mode('all');
       $multi_alert->set_project($project);
+      $multi_alert->set_member($member);
       $multi_alert->get_diff();
       $this->mail_body .= $multi_alert->print_diff();
       // ƒRƒ“ƒeƒ“ƒcŽ–‹Æ•”Œü‚¯
       $multi_alert = new MultiAlert( $config );
       $multi_alert->set_mode('contents');
       $multi_alert->set_project($project);
+      $multi_alert->set_member($member);
       $multi_alert->get_diff();
       $this->mail_body .= $multi_alert->print_diff();
 

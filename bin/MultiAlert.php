@@ -8,10 +8,12 @@ class MultiAlert {
 	private $ext = 'csv';
   private $config;
   private $project;
+  private $member;
   private $diff = array();
 
   private $division_col = 3;
   private $ml_col       = 4;
+  private $member_col   = array(6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56, 61, 66, 71, 76, 81, 86, 91, 96, 101);
   private $subject = "【複数コンテンツ障害】が変更されました。\n\n";
 
   private $latest_array = array();
@@ -28,6 +30,11 @@ class MultiAlert {
     return true;
   }
 
+  public function set_member( $member ) {
+    $this->member = $member;
+    return true;
+  }
+
   public function set_mode( $mode ) {
     $this->mode = $mode . '_';
     return true;
@@ -41,31 +48,67 @@ class MultiAlert {
     $this->latest_array = Util::simple_csv2array($latest_file);
 
     // デヂエのデータから現在の担当者とPJの関連付けをする。
-    $ml_list = array();
+    $to_list = array();
     foreach( $this->project->current_array as $key => $pj_row ) {
       if($key === 'header') continue;
       $division = $pj_row[$this->division_col];
+
+      // 配信先MLカラムの取得
       $ml_row = $pj_row[$this->ml_col];
-      $ml_exploded = explode( ',', $ml_row );
+      $ml_exploded = $this->validate_address( $ml_row );
       foreach( $ml_exploded as $ml ) {
         $ml = trim(mb_convert_kana($ml, "s"));
         $ml = trim($ml);
         if(empty($ml)) continue;
         if( $this->mode == 'all_') {
           // 全社向け
-          $ml_list[] = $ml;
+          $to_list[] = $ml;
         } elseif( $this->mode == 'contents_' && $division == '1' ) {
           // コンテンツ事業部プロジェクト
-          $ml_list[] = $ml;
+          $to_list[] = $ml;
+        }
+      }
+
+      // 担当者カラムの取得
+      foreach( $this->member_col as $col ) {
+        $member_id = $pj_row[$col];
+        if(empty($member_id)) continue;
+
+        if( $this->mode == 'all_') {
+          // 全社向け
+          $to = $this->validate_address( $this->member->current_array[$member_id][2] );   // PCメアド
+          $to_list = array_merge($to_list, $to);
+          $to = $this->validate_address( $this->member->current_array[$member_id][3] );   // 携帯メアド
+          $to_list = array_merge($to_list, $to);
+        } elseif( $this->mode == 'contents_' && $division == '1' ) {
+          // コンテンツ事業部プロジェクト
+          $to = $this->validate_address( $this->member->current_array[$member_id][2] );   // PCメアド
+          $to_list = array_merge($to_list, $to);
+          $to = $this->validate_address( $this->member->current_array[$member_id][3] );   // 携帯メアド
+          $to_list = array_merge($to_list, $to);
         }
       }
     }
-    sort($ml_list);
-    $this->current_array = array_unique($ml_list);
+
+    sort($to_list);
+    $this->current_array = array_unique($to_list);
     Util::save_file( implode(PHP_EOL, $this->current_array), $data_dir, $this->prefix . $this->mode, $this->ext);
 
     // 関連付けされたデータの差分を抽出する。
   	return $this->compare();
+  }
+
+  // デヂエの１カラムに複数レコードが入っている場合に分割する
+  private function validate_address($str) {
+    $result = array();
+    $exploded = explode( ',', $str );
+    foreach( $exploded as $address ) {
+      $address = mb_ereg_replace ('[^0-9a-z_./?\-@]', '', $address);
+      if(!empty($address)) {
+        $result[] = $address;
+      }
+    }
+    return $result;
   }
 
   // 関連付けされたデータの差分を抽出する。
@@ -100,13 +143,18 @@ class MultiAlert {
         $mail_body .= '■コンテンツ事業部向け複数コンテンツ障害' . PHP_EOL;
       }
 
-      foreach( $this->diff['new'] as $ml ) {
-        $mail_body .= '追加: ' . $ml . PHP_EOL;
+      if( isset($this->diff['new']) ) {
+        foreach( $this->diff['new'] as $ml ) {
+          $mail_body .= '追加: ' . $ml . PHP_EOL;
+        }
       }
 
-      foreach( $this->diff['del'] as $ml ) {
-        $mail_body .= '削除: ' . $ml . PHP_EOL;
+      if( isset($this->diff['del']) ) {
+        foreach( $this->diff['del'] as $ml ) {
+          $mail_body .= '削除: ' . $ml . PHP_EOL;
+        }
       }
+
       $mail_body .= PHP_EOL.PHP_EOL;
     }
 
