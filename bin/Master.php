@@ -16,6 +16,8 @@ class Master {
   protected $title_col = 0;
   protected $subject = '';
 
+  private $latest_file;
+  private $current_file;
 
   public function __construct( $config ) {
     $this->config = $config;
@@ -27,14 +29,14 @@ class Master {
     // 最終更新日の担当者ファイルを取得して配列に格納する。
     $debug = $this->config->get_param('debug');
     $data_dir = $this->config->get_param('base_dir') . $this->config->get_param('data_dir');
-  	$latest_file = Util::get_latest_file( $data_dir, $this->prefix, $this->ext, $debug );
-  	$this->latest_array = Util::csv2array($latest_file);
+  	$this->latest_file = Util::get_latest_file( $data_dir, $this->prefix, $this->ext, $debug );
+  	$this->latest_array = Util::csv2array($this->latest_file);
 
   	// デヂエにアクセスして、CSVを取得し配列に格納する。
     $dezie = new Dezie( $this->config );
   	$dezie_data = $dezie->get_data( $this->prefix );
-  	$current_file = Util::save_file( $dezie_data, $data_dir, $this->prefix, $this->ext );
-  	$this->current_array = Util::csv2array($current_file);
+  	$this->current_file = Util::save_file( $dezie_data, $data_dir, $this->prefix, $this->ext );
+  	$this->current_array = Util::csv2array($this->current_file);
 
   	// 担当者マスターの差分を取得する。
   	return $this->compare();
@@ -155,5 +157,12 @@ class Master {
     }
 
   	return $mail_body;
+  }
+
+  // 異常終了時のファイル削除
+  public function remove() {
+    if(file_exists($this->current_file)) {
+      unlink($this->current_file);
+    }
   }
 }

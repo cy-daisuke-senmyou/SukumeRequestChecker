@@ -20,6 +20,8 @@ class Relation {
 
   private $latest_relation_data = array();
   private $current_relation_data = array();
+  private $latest_relation_file;
+  private $current_file;
 
 
   public function __construct( $config ) {
@@ -63,12 +65,12 @@ class Relation {
     // 最終更新日の関連付けファイルを取得して配列に格納する。
     $debug = $this->config->get_param('debug');
     $data_dir = $this->config->get_param('base_dir') . $this->config->get_param('data_dir');
-  	$latest_relation_file = Util::get_latest_file($data_dir, $this->prefix, $this->ext, $debug);
-  	$this->latest_relation_data = Util::file2json($latest_relation_file);
+  	$this->latest_relation_file = Util::get_latest_file($data_dir, $this->prefix, $this->ext, $debug);
+  	$this->latest_relation_data = Util::file2json($this->latest_relation_file);
 
   	// デヂエのデータから現在の担当者とPJの関連付けをする。
   	$this->current_relation_data = $this->relate_pj_member($this->project->current_array, $this->member->current_array);
-  	Util::save_file(json_encode($this->current_relation_data), $data_dir, $this->prefix, $this->ext);
+  	$this->current_file = Util::save_file(json_encode($this->current_relation_data), $data_dir, $this->prefix, $this->ext);
 
   	// 関連付けされたデータの差分を抽出する。
   	return $this->compare();
@@ -158,5 +160,13 @@ class Relation {
   	}
 
   	return true;
+  }
+
+
+  // 異常終了時のファイル削除
+  public function remove() {
+    if(file_exists($this->current_file)) {
+      unlink($this->current_file);
+    }
   }
 }

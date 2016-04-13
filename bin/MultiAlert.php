@@ -18,6 +18,8 @@ class MultiAlert {
 
   private $latest_array = array();
   private $current_array = array();
+  private $latest_file;
+  private $current_file;
 
 
   public function __construct( $config ) {
@@ -44,8 +46,8 @@ class MultiAlert {
     // 最終更新日の関連付けファイルを取得して配列に格納する。
     $debug = $this->config->get_param('debug');
     $data_dir = $this->config->get_param('base_dir') . $this->config->get_param('data_dir');
-    $latest_file = Util::get_latest_file($data_dir, $this->prefix . $this->mode, $this->ext, $debug);
-    $this->latest_array = Util::simple_csv2array($latest_file);
+    $this->latest_file = Util::get_latest_file($data_dir, $this->prefix . $this->mode, $this->ext, $debug);
+    $this->latest_array = Util::simple_csv2array($this->latest_file);
 
     // デヂエのデータから現在の担当者とPJの関連付けをする。
     $to_list = array();
@@ -92,7 +94,7 @@ class MultiAlert {
 
     sort($to_list);
     $this->current_array = array_unique($to_list);
-    Util::save_file( implode(PHP_EOL, $this->current_array), $data_dir, $this->prefix . $this->mode, $this->ext);
+    $this->current_file = Util::save_file( implode(PHP_EOL, $this->current_array), $data_dir, $this->prefix . $this->mode, $this->ext);
 
     // 関連付けされたデータの差分を抽出する。
   	return $this->compare();
@@ -160,5 +162,12 @@ class MultiAlert {
 
     return $mail_body;
 
+  }
+
+  // 異常終了時のファイル削除
+  public function remove() {
+    if(file_exists($this->current_file)) {
+      unlink($this->current_file);
+    }
   }
 }

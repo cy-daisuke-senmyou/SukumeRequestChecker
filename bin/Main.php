@@ -27,8 +27,8 @@ class Main {
       // メンバー一覧のオブジェクト
       $member = new Member( $config );
       // 担当者マスターの差分を取得する。
-    	$member->get_diff();
-  		$this->mail_body .= $member->print_diff();
+      $member->get_diff();
+  	  $this->mail_body .= $member->print_diff();
 
       // プロジェクト一覧のオブジェクト
       $project = new Project( $config );
@@ -72,6 +72,10 @@ class Main {
     	Util::remove_old_file( $config->get_param('data_dir'), $config->get_param('keep_file_days') );
 
     } catch(Exception $e) {
+      $member->remove();
+      $project->remove();
+      $relation->remove();
+      $multi_alert->remove();
     	if($debug) {
     		print($e->getMessage().PHP_EOL);
     	} else {
