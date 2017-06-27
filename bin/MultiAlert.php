@@ -5,16 +5,16 @@ require_once("Util.php");
 class MultiAlert {
   private $prefix = 'multialert_';
   private $mode = '';
-	private $ext = 'csv';
+  private $ext = 'csv';
   private $config;
   private $project;
   private $member;
   private $diff = array();
 
-  private $division_col = 3;
-  private $ml_col       = 4;
-  private $member_col   = array(6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56, 61, 66, 71, 76, 81, 86, 91, 96, 101);
-  private $subject = "y•¡”ƒRƒ“ƒeƒ“ƒcáŠQz‚ª•ÏX‚³‚ê‚Ü‚µ‚½B\n\n";
+  private $division_col = 8;
+  private $ml_col       = 9;
+  private $member_col   = array(11, 16, 21, 26, 31, 36, 41, 46, 51, 56, 61, 66, 71, 76, 81, 86, 91, 96, 101, 106);
+  private $subject = "ã€è¤‡æ•°ã‚³ãƒ³ãƒ†ãƒ³ãƒ„éšœå®³ã€‘ãŒå¤‰æ›´ã•ã‚Œã¾ã—ãŸã€‚\n\n";
 
   private $latest_array = array();
   private $current_array = array();
@@ -43,19 +43,19 @@ class MultiAlert {
   }
 
   public function get_diff() {
-    // ÅIXV“ú‚ÌŠÖ˜A•t‚¯ƒtƒ@ƒCƒ‹‚ðŽæ“¾‚µ‚Ä”z—ñ‚ÉŠi”[‚·‚éB
+    // æœ€çµ‚æ›´æ–°æ—¥ã®é–¢é€£ä»˜ã‘ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å–å¾—ã—ã¦é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
     $debug = $this->config->get_param('debug');
     $data_dir = $this->config->get_param('base_dir') . $this->config->get_param('data_dir');
     $this->latest_file = Util::get_latest_file($data_dir, $this->prefix . $this->mode, $this->ext, $debug);
     $this->latest_array = Util::simple_csv2array($this->latest_file);
 
-    // ƒfƒaƒG‚Ìƒf[ƒ^‚©‚çŒ»Ý‚Ì’S“–ŽÒ‚ÆPJ‚ÌŠÖ˜A•t‚¯‚ð‚·‚éB
+    // ãƒ‡ãƒ‚ã‚¨ã®ãƒ‡ãƒ¼ã‚¿ã‹ã‚‰ç¾åœ¨ã®æ‹…å½“è€…ã¨PJã®é–¢é€£ä»˜ã‘ã‚’ã™ã‚‹ã€‚
     $to_list = array();
     foreach( $this->project->current_array as $key => $pj_row ) {
       if($key === 'header') continue;
       $division = $pj_row[$this->division_col];
 
-      // ”zMæMLƒJƒ‰ƒ€‚ÌŽæ“¾
+      // é…ä¿¡å…ˆMLã‚«ãƒ©ãƒ ã®å–å¾—
       $ml_row = $pj_row[$this->ml_col];
       $ml_exploded = $this->validate_address( $ml_row );
       foreach( $ml_exploded as $ml ) {
@@ -63,30 +63,30 @@ class MultiAlert {
         $ml = trim($ml);
         if(empty($ml)) continue;
         if( $this->mode == 'all_') {
-          // ‘SŽÐŒü‚¯
+          // å…¨ç¤¾å‘ã‘
           $to_list[] = $ml;
         } elseif( $this->mode == 'contents_' && $division == '1' ) {
-          // ƒRƒ“ƒeƒ“ƒcŽ–‹Æ•”ƒvƒƒWƒFƒNƒg
+          // ã‚³ãƒ³ãƒ†ãƒ³ãƒ„äº‹æ¥­éƒ¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆ
           $to_list[] = $ml;
         }
       }
 
-      // ’S“–ŽÒƒJƒ‰ƒ€‚ÌŽæ“¾
+      // æ‹…å½“è€…ã‚«ãƒ©ãƒ ã®å–å¾—
       foreach( $this->member_col as $col ) {
         $member_id = $pj_row[$col];
         if(empty($member_id)) continue;
 
         if( $this->mode == 'all_') {
-          // ‘SŽÐŒü‚¯
-          $to = $this->validate_address( $this->member->current_array[$member_id][2] );   // PCƒƒAƒh
+          // å…¨ç¤¾å‘ã‘
+          $to = $this->validate_address( $this->member->current_array[$member_id][7] );   // PCãƒ¡ã‚¢ãƒ‰
           $to_list = array_merge($to_list, $to);
-          $to = $this->validate_address( $this->member->current_array[$member_id][3] );   // Œg‘ÑƒƒAƒh
+          $to = $this->validate_address( $this->member->current_array[$member_id][8] );   // æºå¸¯ãƒ¡ã‚¢ãƒ‰
           $to_list = array_merge($to_list, $to);
         } elseif( $this->mode == 'contents_' && $division == '1' ) {
-          // ƒRƒ“ƒeƒ“ƒcŽ–‹Æ•”ƒvƒƒWƒFƒNƒg
-          $to = $this->validate_address( $this->member->current_array[$member_id][2] );   // PCƒƒAƒh
+          // ã‚³ãƒ³ãƒ†ãƒ³ãƒ„äº‹æ¥­éƒ¨ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆ
+          $to = $this->validate_address( $this->member->current_array[$member_id][7] );   // PCãƒ¡ã‚¢ãƒ‰
           $to_list = array_merge($to_list, $to);
-          $to = $this->validate_address( $this->member->current_array[$member_id][3] );   // Œg‘ÑƒƒAƒh
+          $to = $this->validate_address( $this->member->current_array[$member_id][8] );   // æºå¸¯ãƒ¡ã‚¢ãƒ‰
           $to_list = array_merge($to_list, $to);
         }
       }
@@ -96,11 +96,11 @@ class MultiAlert {
     $this->current_array = array_unique($to_list);
     $this->current_file = Util::save_file( implode(PHP_EOL, $this->current_array), $data_dir, $this->prefix . $this->mode, $this->ext);
 
-    // ŠÖ˜A•t‚¯‚³‚ê‚½ƒf[ƒ^‚Ì·•ª‚ð’Šo‚·‚éB
-  	return $this->compare();
+    // é–¢é€£ä»˜ã‘ã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã®å·®åˆ†ã‚’æŠ½å‡ºã™ã‚‹ã€‚
+    return $this->compare();
   }
 
-  // ƒfƒaƒG‚Ì‚PƒJƒ‰ƒ€‚É•¡”ƒŒƒR[ƒh‚ª“ü‚Á‚Ä‚¢‚éê‡‚É•ªŠ„‚·‚é
+  // ãƒ‡ãƒ‚ã‚¨ã®ï¼‘ã‚«ãƒ©ãƒ ã«è¤‡æ•°ãƒ¬ã‚³ãƒ¼ãƒ‰ãŒå…¥ã£ã¦ã„ã‚‹å ´åˆã«åˆ†å‰²ã™ã‚‹
   private function validate_address($str) {
     $result = array();
     $exploded = explode( ',', $str );
@@ -113,16 +113,16 @@ class MultiAlert {
     return $result;
   }
 
-  // ŠÖ˜A•t‚¯‚³‚ê‚½ƒf[ƒ^‚Ì·•ª‚ð’Šo‚·‚éB
+  // é–¢é€£ä»˜ã‘ã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã®å·®åˆ†ã‚’æŠ½å‡ºã™ã‚‹ã€‚
   private function compare() {
-    // V‹K
+    // æ–°è¦
     $new_record_array = array_diff( $this->current_array, $this->latest_array );
     if( !empty($new_record_array) ) {
       $this->diff['new'] = $new_record_array;
     }
 
-    // íœƒŒƒR[ƒh
-  	$deleted_record_array = array_diff($this->latest_array, $this->current_array);
+    // å‰Šé™¤ãƒ¬ã‚³ãƒ¼ãƒ‰
+    $deleted_record_array = array_diff($this->latest_array, $this->current_array);
     if( !empty($deleted_record_array) ) {
       $this->diff['del'] = $deleted_record_array;
     }
@@ -130,30 +130,30 @@ class MultiAlert {
     return true;
   }
 
-  // ·•ªƒf[ƒ^‚ðƒ[ƒ‹–{•¶—p‚Éo—Í‚·‚éB
+  // å·®åˆ†ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ¡ãƒ¼ãƒ«æœ¬æ–‡ç”¨ã«å‡ºåŠ›ã™ã‚‹ã€‚
   public function print_diff() {
     $mail_body = '';
 
     if( !empty($this->diff) ) {
 
       if( $this->mode == 'all_') {
-        // ‘SŽÐ
+        // å…¨ç¤¾
         $mail_body .= $this->subject;
-        $mail_body .= '¡‘SŽÐŒü‚¯•¡”ƒRƒ“ƒeƒ“ƒcáŠQ' . PHP_EOL;
+        $mail_body .= 'â– å…¨ç¤¾å‘ã‘è¤‡æ•°ã‚³ãƒ³ãƒ†ãƒ³ãƒ„éšœå®³' . PHP_EOL;
       } else {
-        // ƒRƒ“ƒeƒ“ƒcŽ–‹Æ•”
-        $mail_body .= '¡ƒRƒ“ƒeƒ“ƒcŽ–‹Æ•”Œü‚¯•¡”ƒRƒ“ƒeƒ“ƒcáŠQ' . PHP_EOL;
+        // ã‚³ãƒ³ãƒ†ãƒ³ãƒ„äº‹æ¥­éƒ¨
+        $mail_body .= 'â– ã‚³ãƒ³ãƒ†ãƒ³ãƒ„äº‹æ¥­éƒ¨å‘ã‘è¤‡æ•°ã‚³ãƒ³ãƒ†ãƒ³ãƒ„éšœå®³' . PHP_EOL;
       }
 
       if( isset($this->diff['new']) ) {
         foreach( $this->diff['new'] as $ml ) {
-          $mail_body .= '’Ç‰Á: ' . $ml . PHP_EOL;
+          $mail_body .= 'è¿½åŠ : ' . $ml . PHP_EOL;
         }
       }
 
       if( isset($this->diff['del']) ) {
         foreach( $this->diff['del'] as $ml ) {
-          $mail_body .= 'íœ: ' . $ml . PHP_EOL;
+          $mail_body .= 'å‰Šé™¤: ' . $ml . PHP_EOL;
         }
       }
 
@@ -164,7 +164,7 @@ class MultiAlert {
 
   }
 
-  // ˆÙíI—¹Žž‚Ìƒtƒ@ƒCƒ‹íœ
+  // ç•°å¸¸çµ‚äº†æ™‚ã®ãƒ•ã‚¡ã‚¤ãƒ«å‰Šé™¤
   public function remove() {
     if(file_exists($this->current_file)) {
       unlink($this->current_file);

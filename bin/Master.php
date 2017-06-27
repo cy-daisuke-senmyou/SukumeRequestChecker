@@ -5,7 +5,7 @@ require_once("Dezie.php");
 
 class Master {
   public $latest_array = array();
-	public $current_array = array();
+  public $current_array = array();
 
   protected $config = array();
   protected $diff = array();
@@ -26,140 +26,143 @@ class Master {
 
 
   public function get_diff() {
-    // ÅIXV“ú‚Ì’S“–ŽÒƒtƒ@ƒCƒ‹‚ðŽæ“¾‚µ‚Ä”z—ñ‚ÉŠi”[‚·‚éB
+    // æœ€çµ‚æ›´æ–°æ—¥ã®æ‹…å½“è€…ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å–å¾—ã—ã¦é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
     $debug = $this->config->get_param('debug');
     $data_dir = $this->config->get_param('base_dir') . $this->config->get_param('data_dir');
-  	$this->latest_file = Util::get_latest_file( $data_dir, $this->prefix, $this->ext, $debug );
-  	$this->latest_array = Util::csv2array($this->latest_file);
+    $this->latest_file = Util::get_latest_file( $data_dir, $this->prefix, $this->ext, $debug );
+    $this->latest_array = Util::csv2array($this->latest_file);
 
-  	// ƒfƒaƒG‚ÉƒAƒNƒZƒX‚µ‚ÄACSV‚ðŽæ“¾‚µ”z—ñ‚ÉŠi”[‚·‚éB
+    // ãƒ‡ãƒ‚ã‚¨ã«ã‚¢ã‚¯ã‚»ã‚¹ã—ã¦ã€CSVã‚’å–å¾—ã—é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
     $dezie = new Dezie( $this->config );
-  	$dezie_data = $dezie->get_data( $this->prefix );
-  	$this->current_file = Util::save_file( $dezie_data, $data_dir, $this->prefix, $this->ext );
-  	$this->current_array = Util::csv2array($this->current_file);
+    $dezie_data = $dezie->get_data( $this->prefix );
+    $this->current_file = Util::save_file( $dezie_data, $data_dir, $this->prefix, $this->ext );
+    $this->current_array = Util::csv2array($this->current_file);
+    if (isset($this->status_col)) {
+      $this->current_array = Util::filter($this->current_array, $this->status_col, $this->status_off_value);
+    }
 
-  	// ’S“–ŽÒƒ}ƒXƒ^[‚Ì·•ª‚ðŽæ“¾‚·‚éB
-  	return $this->compare();
+    // æ‹…å½“è€…ãƒžã‚¹ã‚¿ãƒ¼ã®å·®åˆ†ã‚’å–å¾—ã™ã‚‹ã€‚
+    return $this->compare();
   }
 
-  // •ÛŠÇ‚³‚ê‚Ä‚¢‚éÅV‚ÌCSV‚ÆAƒfƒaƒG‚©‚çŽæ“¾‚µ‚½CSV‚ð”äŠr‚µ‚Ä·•ª‚ð•Ô‚·B
+  // ä¿ç®¡ã•ã‚Œã¦ã„ã‚‹æœ€æ–°ã®CSVã¨ã€ãƒ‡ãƒ‚ã‚¨ã‹ã‚‰å–å¾—ã—ãŸCSVã‚’æ¯”è¼ƒã—ã¦å·®åˆ†ã‚’è¿”ã™ã€‚
   private function compare() {
-  	// ƒwƒbƒ_s‚ÍŒã‚Å”z—ñ“Y‚¦Žš‚ÉŽg‚¤B
-  	$header = $this->current_array['header'];
+    // ãƒ˜ãƒƒãƒ€è¡Œã¯å¾Œã§é…åˆ—æ·»ãˆå­—ã«ä½¿ã†ã€‚
+    $header = $this->current_array['header'];
 
-  	// ‚Q‚Â‚Ì”z—ñ‚ð”äŠr‚µ‚Ä·•ª‚ð’Šo‚·‚éB
-  	$diff = array();
+    // ï¼’ã¤ã®é…åˆ—ã‚’æ¯”è¼ƒã—ã¦å·®åˆ†ã‚’æŠ½å‡ºã™ã‚‹ã€‚
+    $diff = array();
 
-  	// V‹KƒŒƒR[ƒh
-  	$new_record_array = array_diff_key($this->current_array, $this->latest_array);
-  	foreach ($new_record_array as $key => $new_record) {
-  		$after = array();
-  		$diff[$key]['title'] = $new_record[$this->title_col];
-  		foreach($new_record as $index => $value) {
-  			// ·•ª’Šo‘ÎÛ‚ÌƒJƒ‰ƒ€‚Ìê‡‚Í•Ê‚Ì”z—ñ‚ÉŒ‹‰Ê‚ðŠi”[‚·‚éB
-  			if(in_array($index, $this->target_col)) {
-  				$column = $header[$index];
-  				$after[$column] = $new_record[$index];
-  			}
-  		}
-  		$diff[$key]['after'] = $after;
-  	}
+    // æ–°è¦ãƒ¬ã‚³ãƒ¼ãƒ‰
+    $new_record_array = array_diff_key($this->current_array, $this->latest_array);
+    foreach ($new_record_array as $key => $new_record) {
+      $after = array();
+      $diff[$key]['title'] = $new_record[$this->title_col];
+      foreach($new_record as $index => $value) {
+        // å·®åˆ†æŠ½å‡ºå¯¾è±¡ã®ã‚«ãƒ©ãƒ ã®å ´åˆã¯åˆ¥ã®é…åˆ—ã«çµæžœã‚’æ ¼ç´ã™ã‚‹ã€‚
+        if(in_array($index, $this->target_col)) {
+          $column = $header[$index];
+          $after[$column] = $new_record[$index];
+        }
+      }
+      $diff[$key]['after'] = $after;
+    }
 
-  	// íœƒŒƒR[ƒh
-  	$deleted_record_array = array_diff_key($this->latest_array, $this->current_array);
-  	foreach ($deleted_record_array as $key => $deleted_record) {
-  		$before = array();
-  		$diff[$key]['title'] = $deleted_record[$this->title_col];
-  		foreach($deleted_record as $index => $value) {
-  			// ·•ª’Šo‘ÎÛ‚ÌƒJƒ‰ƒ€‚Ìê‡‚Í•Ê‚Ì”z—ñ‚ÉŒ‹‰Ê‚ðŠi”[‚·‚éB
-  			if(in_array($index, $this->target_col)) {
-  				$column = $header[$index];
-  				$before[$column] = $deleted_record[$index];
-  			}
-  		}
-  		$diff[$key]['before'] = $before;
-  	}
+    // å‰Šé™¤ãƒ¬ã‚³ãƒ¼ãƒ‰
+    $deleted_record_array = array_diff_key($this->latest_array, $this->current_array);
+    foreach ($deleted_record_array as $key => $deleted_record) {
+      $before = array();
+      $diff[$key]['title'] = $deleted_record[$this->title_col];
+      foreach($deleted_record as $index => $value) {
+        // å·®åˆ†æŠ½å‡ºå¯¾è±¡ã®ã‚«ãƒ©ãƒ ã®å ´åˆã¯åˆ¥ã®é…åˆ—ã«çµæžœã‚’æ ¼ç´ã™ã‚‹ã€‚
+        if(in_array($index, $this->target_col)) {
+          $column = $header[$index];
+          $before[$column] = $deleted_record[$index];
+        }
+      }
+      $diff[$key]['before'] = $before;
+    }
 
-  	// —¼•û‚É‘¶Ý‚·‚éƒŒƒR[ƒh‚Ì·•ª‚ð’Šo
-  	// ƒfƒaƒGCSVƒŒƒR[ƒh”•ªƒ‹[ƒv
-  	foreach($this->current_array as $current_data) {
-  		if(empty($current_data[0])) continue;
-  		$current_id = $current_data[0];
-  		// ÅIXVCSVƒtƒ@ƒCƒ‹‚ÌƒŒƒR[ƒh”•ªƒ‹[ƒvB
-  		foreach($this->latest_array as $latest_data) {
-  			// ID—ñ‚Å“Ë‚«‡‚í‚¹‚ð‚·‚éB
-  			$latest_id = $latest_data[0];
-  			if($latest_id === $current_id) {
-  				$array_diff = array_diff_assoc($current_data, $latest_data);
-  				if(!empty($array_diff)) {
-  					$before = array();
-  					$after = array();
-  					// ·•ª—v‘f”•ªƒ‹[ƒv
-  					foreach($array_diff as $index => $value) {
-  						// ·•ª’Šo‘ÎÛ‚ÌƒJƒ‰ƒ€‚Ìê‡‚Í•Ê‚Ì”z—ñ‚ÉŒ‹‰Ê‚ðŠi”[‚·‚éB
-  						if(in_array($index, $this->target_col)) {
-  							$column = $header[$index];
-  							$before[$column] = $latest_data[$index];
-  							$after[$column] = $current_data[$index];
-  						}
-  					}
-  					// ·•ª‚ª‚ ‚Á‚½‚çresult‚ÉŠi”[‚·‚éB
-  					if(!empty($before) && !empty($after)) {
-  						$diff[$current_id]['title'] = $current_data[$this->title_col];
-  						$diff[$current_id]['before'] = $before;
-  						$diff[$current_id]['after'] = $after;
-  					}
-  				}
-  				break;
-  			}
-  		}
-  	}
+    // ä¸¡æ–¹ã«å­˜åœ¨ã™ã‚‹ãƒ¬ã‚³ãƒ¼ãƒ‰ã®å·®åˆ†ã‚’æŠ½å‡º
+    // ãƒ‡ãƒ‚ã‚¨CSVãƒ¬ã‚³ãƒ¼ãƒ‰æ•°åˆ†ãƒ«ãƒ¼ãƒ—
+    foreach($this->current_array as $current_data) {
+      if(empty($current_data[0])) continue;
+      $current_id = $current_data[0];
+      // æœ€çµ‚æ›´æ–°CSVãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ¬ã‚³ãƒ¼ãƒ‰æ•°åˆ†ãƒ«ãƒ¼ãƒ—ã€‚
+      foreach($this->latest_array as $latest_data) {
+        // IDåˆ—ã§çªãåˆã‚ã›ã‚’ã™ã‚‹ã€‚
+        $latest_id = $latest_data[0];
+        if($latest_id === $current_id) {
+          $array_diff = array_diff_assoc($current_data, $latest_data);
+          if(!empty($array_diff)) {
+            $before = array();
+            $after = array();
+            // å·®åˆ†è¦ç´ æ•°åˆ†ãƒ«ãƒ¼ãƒ—
+            foreach($array_diff as $index => $value) {
+              // å·®åˆ†æŠ½å‡ºå¯¾è±¡ã®ã‚«ãƒ©ãƒ ã®å ´åˆã¯åˆ¥ã®é…åˆ—ã«çµæžœã‚’æ ¼ç´ã™ã‚‹ã€‚
+              if(in_array($index, $this->target_col)) {
+                $column = $header[$index];
+                $before[$column] = $latest_data[$index];
+                $after[$column] = $current_data[$index];
+              }
+            }
+            // å·®åˆ†ãŒã‚ã£ãŸã‚‰resultã«æ ¼ç´ã™ã‚‹ã€‚
+            if(!empty($before) && !empty($after)) {
+              $diff[$current_id]['title'] = $current_data[$this->title_col];
+              $diff[$current_id]['before'] = $before;
+              $diff[$current_id]['after'] = $after;
+            }
+          }
+          break;
+        }
+      }
+    }
 
     $this->diff = $diff;
     return true;
   }
 
 
-  // ·•ªƒf[ƒ^‚ðƒ[ƒ‹–{•¶—p‚Éo—Í‚·‚éB
+  // å·®åˆ†ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ¡ãƒ¼ãƒ«æœ¬æ–‡ç”¨ã«å‡ºåŠ›ã™ã‚‹ã€‚
   public function print_diff() {
-  	$mail_body = '';
+    $mail_body = '';
 
     if( !empty($this->diff) ) {
-  		$mail_body .= $this->subject;
+      $mail_body .= $this->subject;
 
       foreach ($this->diff as $id => $value) {
-    		$title = $value['title'];
-    		$before = array_key_exists('before', $value) ? $value['before'] : false;
-    		$after  = array_key_exists('after', $value) ? $value['after'] : false;
+        $title = $value['title'];
+        $before = array_key_exists('before', $value) ? $value['before'] : false;
+        $after  = array_key_exists('after', $value) ? $value['after'] : false;
 
-    		if(empty($before) && !empty($after)) {
-    			// V‹K
-    			$mail_body .= '¡' . $title . 'yV‹Kz' . PHP_EOL;
-    			foreach ($after as $column => $value) {
-    				$mail_body .= $column.': '.$after[$column].PHP_EOL;
-    			}
-    		} elseif(!empty($before) && empty($after)) {
-    			// íœ
-    			$mail_body .= '¡' . $title . 'yíœz' . PHP_EOL;
-    			foreach ($before as $column => $value) {
-    				$mail_body .= $column.': '.$before[$column].PHP_EOL;
-    			}
-    		} else {
-    			// •ÏX
-    			$mail_body .= '¡' . $title . 'y•ÏXz' . PHP_EOL;
-    			foreach ($before as $column => $value) {
-    				$mail_body .= $column.': '.$before[$column].' ¨ '.$after[$column].PHP_EOL;
-    			}
-    		}
+        if(empty($before) && !empty($after)) {
+          // æ–°è¦
+          $mail_body .= 'â– ' . $title . 'ã€æ–°è¦ã€‘' . PHP_EOL;
+          foreach ($after as $column => $value) {
+            $mail_body .= $column.': '.$after[$column].PHP_EOL;
+          }
+        } elseif(!empty($before) && empty($after)) {
+          // å‰Šé™¤
+          $mail_body .= 'â– ' . $title . 'ã€å‰Šé™¤ã€‘' . PHP_EOL;
+          foreach ($before as $column => $value) {
+            $mail_body .= $column.': '.$before[$column].PHP_EOL;
+          }
+        } else {
+          // å¤‰æ›´
+          $mail_body .= 'â– ' . $title . 'ã€å¤‰æ›´ã€‘' . PHP_EOL;
+          foreach ($before as $column => $value) {
+            $mail_body .= $column.': '.$before[$column].' â†’ '.$after[$column].PHP_EOL;
+          }
+        }
         $mail_body .= PHP_EOL;
       }
-    	$mail_body .= PHP_EOL.PHP_EOL;
+      $mail_body .= PHP_EOL.PHP_EOL;
     }
 
-  	return $mail_body;
+    return $mail_body;
   }
 
-  // ˆÙíI—¹Žž‚Ìƒtƒ@ƒCƒ‹íœ
+  // ç•°å¸¸çµ‚äº†æ™‚ã®ãƒ•ã‚¡ã‚¤ãƒ«å‰Šé™¤
   public function remove() {
     if(file_exists($this->current_file)) {
       unlink($this->current_file);

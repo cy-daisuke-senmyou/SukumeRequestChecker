@@ -2,91 +2,103 @@
 
 class Util {
 
-  // ‘ÎÛƒfƒBƒŒƒNƒgƒŠ“à‚ÅÅV‚Ìƒtƒ@ƒCƒ‹‚ğæ“¾‚·‚éB
+  // å¯¾è±¡ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã§æœ€æ–°ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å–å¾—ã™ã‚‹ã€‚
   public static function get_latest_file($path, $prefix, $ext, $debug) {
-  	$latest_mtime = 0;
-  	$latest_file = '';
-  	foreach (glob($path.$prefix.'*.'.$ext) as $filename) {
-  		$mtime = filemtime( $filename );
-  		if( $mtime > $latest_mtime ){
-  			$latest_mtime = $mtime;
-  			$latest_file = $filename;
-  		}
-  	}
+    $latest_mtime = 0;
+    $latest_file = '';
+    foreach (glob($path.$prefix.'*.'.$ext) as $filename) {
+      $mtime = filemtime( $filename );
+      if( $mtime > $latest_mtime ){
+        $latest_mtime = $mtime;
+        $latest_file = $filename;
+      }
+    }
 
-  	if($debug) {
-			return  "$path/{$prefix}for_test.{$ext}";
-  	}
+//    if($debug) {
+//      return  "$path/{$prefix}for_test.{$ext}";
+//    }
 
-  	if(empty($latest_file)) {
-  		return false;
-  	} else {
-  		return $latest_file;
-  	}
+    if(empty($latest_file)) {
+      return false;
+    } else {
+      return $latest_file;
+    }
   }
 
-  // CSVƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚İ”z—ñ‚ÉŠi”[‚·‚éB
+  // CSVãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã¿é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
   public static function csv2array($path) {
-  	$csv_data = array();
-  	$count = 1;
+    $csv_data = array();
+    $count = 1;
 
     $fp = fopen($path, "r");
     if( $fp === false ) {
       throw new Exception("Can't open file.", 1);
     }
 
-  	while (($line = fgetcsv($fp)) !== false) {
-  		if($count === 1) {
-  			// 1s‚ß‚ğƒwƒbƒ_‚Æ‚µ‚ÄŠi”[
-  			$csv_data['header'] = $line;
-  		} else {
-  			// BackLog“o˜^ID or ID ‚ğƒL[‚É‚·‚éB
-  			$id = trim($line[0]);
-  			$csv_data[$id] = $line;
-  		}
-  		$count++;
-  	}
-  	fclose($fp);
+    while (($line = fgetcsv($fp)) !== false) {
+      if($count === 1) {
+        // 1è¡Œã‚ã‚’ãƒ˜ãƒƒãƒ€ã¨ã—ã¦æ ¼ç´
+        $csv_data['header'] = $line;
+      } else {
+        // BackLogç™»éŒ²ID or ID ã‚’ã‚­ãƒ¼ã«ã™ã‚‹ã€‚
+        $id = trim($line[5]);
+        $csv_data[$id] = $line;
+      }
+      $count++;
+    }
+    fclose($fp);
 
-  	return $csv_data;
+    return $csv_data;
   }
 
-  // ‚P—ñ‚¾‚¯‚ÌCSV‚©‚ç”z—ñ‚ğ¶¬
+  // ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ç„¡åŠ¹ã®ãƒ¬ã‚³ãƒ¼ãƒ‰ã‚’é™¤å¤–ã™ã‚‹
+  public static function filter($src, $col, $value) {
+    $result = array();
+    foreach ($src as $key => $row) {
+      if ($row[$col] == $value) {
+        continue;
+      }
+      $result[$key] = $row;
+    }
+    return $result;
+  }
+
+  // ï¼‘åˆ—ã ã‘ã®CSVã‹ã‚‰é…åˆ—ã‚’ç”Ÿæˆ
   public static function simple_csv2array($path) {
     $csv_data = file($path, FILE_IGNORE_NEW_LINES);
     return $csv_data;
   }
 
-  // jsonƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İ‚ñ‚ÅjsonƒIƒuƒWƒFƒNƒg‚É‚·‚éB
+  // jsonãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿è¾¼ã‚“ã§jsonã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«ã™ã‚‹ã€‚
   function file2json($path) {
-  	$fp = fopen($path, 'r');
-  	$json_data = json_decode(fread($fp, filesize($path)), true);
-  	return $json_data;
+    $fp = fopen($path, 'r');
+    $json_data = json_decode(fread($fp, filesize($path)), true);
+    return $json_data;
   }
 
   public static function save_file($body, $path, $prefix, $ext) {
-  	// —š—ğ•Û‘¶‚Ì‚½‚ßˆê’Uƒtƒ@ƒCƒ‹‚Éo—Í‚·‚éB
-  	$output_file = $path.$prefix.date("YmdHis").'.'.$ext;
-  	$fp = fopen($output_file, "w");
-  	fwrite($fp, $body);
-  	fclose($fp);
+    // å±¥æ­´ä¿å­˜ã®ãŸã‚ä¸€æ—¦ãƒ•ã‚¡ã‚¤ãƒ«ã«å‡ºåŠ›ã™ã‚‹ã€‚
+    $output_file = $path.$prefix.date("YmdHis").'.'.$ext;
+    $fp = fopen($output_file, "w");
+    fwrite($fp, $body);
+    fclose($fp);
 
-  	return $output_file;
+    return $output_file;
   }
 
 
-  // ‘ÎÛƒfƒBƒŒƒNƒgƒŠ“à‚Å•ÛŠÇ“ú”‚ğ‰ß‚¬‚½ƒtƒ@ƒCƒ‹‚ğíœ‚·‚éB
+  // å¯¾è±¡ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã§ä¿ç®¡æ—¥æ•°ã‚’éããŸãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‰Šé™¤ã™ã‚‹ã€‚
   public static function remove_old_file( $path, $file_keep_days ) {
-  	$ext_array = array('csv', 'json');
-  	$limit_time = time() -  ($file_keep_days * 24 * 60 * 60);
-  	foreach ($ext_array as $ext) {
-  		foreach (glob($path.'*.'.$ext) as $filename) {
-  			$mtime = filemtime( $filename );
-  			if( $mtime < $limit_time ){
-  				unlink($filename);
-  			}
-  		}
-  	}
+    $ext_array = array('csv', 'json');
+    $limit_time = time() -  ($file_keep_days * 24 * 60 * 60);
+    foreach ($ext_array as $ext) {
+      foreach (glob($path.'*.'.$ext) as $filename) {
+        $mtime = filemtime( $filename );
+        if( $mtime < $limit_time ){
+          unlink($filename);
+        }
+      }
+    }
   }
 
 }

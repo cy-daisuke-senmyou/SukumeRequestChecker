@@ -14,18 +14,18 @@ class Config {
 
   private function get_config() {
     $file = $this->base_dir . $this->conf_path;
-  	if(is_file( $file ) && preg_match("/.*\.ini$/", $file) == true) {
-  		$ini_data = parse_ini_file( $file );
-  	} else {
-  		throw new Exception("İ’èƒtƒ@ƒCƒ‹‚ÌƒI[ƒvƒ“‚É¸”s‚µ‚Ü‚µ‚½B");
-  		return false;
-  	}
+    if(is_file( $file ) && preg_match("/.*\.ini$/", $file) == true) {
+      $ini_data = parse_ini_file( $file );
+    } else {
+      throw new Exception("è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚ªãƒ¼ãƒ—ãƒ³ã«å¤±æ•—ã—ã¾ã—ãŸã€‚");
+      return false;
+    }
 
     foreach ($ini_data as $key => $value) {
       $this->param[$key] = $value;
     }
 
-  	return true;
+    return true;
   }
 
   public function get_param( $key ) {

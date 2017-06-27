@@ -10,46 +10,37 @@ class Dezie {
     return true;
   }
 
-  // ƒfƒaƒG‚ÉƒAƒNƒZƒX‚µ‚ÄACSV‚ğæ“¾‚µƒtƒ@ƒCƒ‹‚ÉŠi”[‚·‚éB
+  // ãƒ‡ãƒ‚ã‚¨ã«ã‚¢ã‚¯ã‚»ã‚¹ã—ã¦ã€CSVã‚’å–å¾—ã—ãƒ•ã‚¡ã‚¤ãƒ«ã«æ ¼ç´ã™ã‚‹ã€‚
   function get_data( $prefix) {
-  	$url = $this->config->get_param( $prefix.'dezie_url' );
-  	$body = "";
+    $file = $this->config->get_param( $prefix.'dezie_file' );
+    $body = file_get_contents($file);
 
-  	$req = new HTTP_Request2($url);
-  	$req->setHeader('allowRedirects-Alive', true);   // ƒŠƒ_ƒCƒŒƒNƒg‚Ì‹–‰Âİ’è(true/false)
-  	$req->setHeader('maxRedirects', 3);              // ƒŠƒ_ƒCƒŒƒNƒg‚ÌÅ‘å‰ñ”
+    // é€šä¿¡ã‚¨ãƒ©ãƒ¼ã€æ¨©é™è¨­å®šã®å¤‰æ›´ãªã©ãŒã‚ã‚‹ã¨ã‚¨ãƒ©ãƒ¼ç”»é¢ãŒè¡¨ç¤ºã•ã‚Œã‚‹ã€‚
+    if(preg_match('/^<!DOCTYPE html>/', $body)) {
+      throw new Exception("ãƒ‡ãƒ‚ã‚¨ã‹ã‚‰ã®ãƒ‡ãƒ¼ã‚¿å–å¾—ã«å¤±æ•—ã—ã¾ã—ãŸã€‚");
+    }
 
-  	$response = $req->send();
-  	if($response->getStatus() == 200) {
-  		$body = $response->getBody();
-  	}
+    // ãƒ‡ãƒ‚ã‚¨ã‹ã‚‰ã®ãƒ‡ãƒ¼ã‚¿ã« Cookie ã®ãƒ‡ãƒ¼ã‚¿ãŒå…¥ã£ã¦ã—ã¾ã†ã®ã§å‰Šé™¤
+    $body = $this->remove_cookie($body);
 
-  	// ’ÊMƒGƒ‰[AŒ ŒÀİ’è‚Ì•ÏX‚È‚Ç‚ª‚ ‚é‚ÆƒGƒ‰[‰æ–Ê‚ª•\¦‚³‚ê‚éB
-  	if(preg_match('/^<!DOCTYPE html>/', $body)) {
-  		throw new Exception("ƒfƒaƒG‚©‚ç‚Ìƒf[ƒ^æ“¾‚É¸”s‚µ‚Ü‚µ‚½B");
-  	}
+    // ãƒ‡ãƒ‚ã‚¨ã‹ã‚‰å–å¾—ã—ãŸãƒ¬ã‚³ãƒ¼ãƒ‰ã®ä¸­ã«æ”¹è¡ŒãŒå«ã¾ã‚Œã¦ã„ã‚‹ã€‚
+    // ãƒ¬ã‚³ãƒ¼ãƒ‰ä¸­ã®æ”¹è¡Œã¯ LF ã§è¡Œæœ«ã¯ CR+LF ãªã®ã§å‰è€…ã ã‘<br>ã«ç½®æ›ã™ã‚‹ã€‚
+    $body = $this->lf2br($body);
 
-  	// ƒfƒaƒG‚©‚ç‚Ìƒf[ƒ^‚É Cookie ‚Ìƒf[ƒ^‚ª“ü‚Á‚Ä‚µ‚Ü‚¤‚Ì‚Åíœ
-  	$body = $this->remove_cookie($body);
-
-  	// ƒfƒaƒG‚©‚çæ“¾‚µ‚½ƒŒƒR[ƒh‚Ì’†‚É‰üs‚ªŠÜ‚Ü‚ê‚Ä‚¢‚éB
-  	// ƒŒƒR[ƒh’†‚Ì‰üs‚Í LF ‚Ås––‚Í CR+LF ‚È‚Ì‚Å‘OÒ‚¾‚¯<br>‚É’uŠ·‚·‚éB
-  	$body = $this->lf2br($body);
-
-  	return $body;
+    return $body;
   }
 
-  // "Set-Cookie: " ‚©‚çn‚Ü‚és‚ğíœ‚·‚éB
+  // "Set-Cookie: " ã‹ã‚‰å§‹ã¾ã‚‹è¡Œã‚’å‰Šé™¤ã™ã‚‹ã€‚
   private function remove_cookie($str) {
-  	$str = preg_replace("/^Set-Cookie: .*\n/m", "", $str);
-  	return $str;
+    $str = preg_replace("/^Set-Cookie: .*\n/m", "", $str);
+    return $str;
   }
 
 
-  // LF‚Ì‚İ‚Ì‰üs‚ğ<br>‚É’uŠ·‚·‚éBCR+LF ‚Ìê‡‚Í’uŠ·‚µ‚È‚¢B
+  // LFã®ã¿ã®æ”¹è¡Œã‚’<br>ã«ç½®æ›ã™ã‚‹ã€‚CR+LF ã®å ´åˆã¯ç½®æ›ã—ãªã„ã€‚
   private function lf2br($str) {
-  	$str = preg_replace("/([^\r])\n+/", "\\1, ", $str);
-  	return $str;
+    $str = preg_replace("/([^\r])\n+/", "\\1, ", $str);
+    return $str;
   }
 
 

@@ -11,52 +11,52 @@ $main = new Main();
 $main->run();
 
 class Main {
-  // ƒ[ƒ‹–{•¶
+  // ãƒ¡ãƒ¼ãƒ«æœ¬æ–‡
   private $mail_body = '';
 
   public function run() {
     try {
-      // ‹¤’Êİ’èæ“¾
+      // å…±é€šè¨­å®šå–å¾—
       $base_dir = dirname(__FILE__) . '/../';
       $config = new Config( $base_dir );
       $debug = $config->get_param('debug');
 
-      // ƒŒƒ|[ƒg—pƒIƒuƒWƒFƒNƒg
+      // ãƒ¬ãƒãƒ¼ãƒˆç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
       $report = new Report( $config );
 
-      // ƒƒ“ƒo[ˆê——‚ÌƒIƒuƒWƒFƒNƒg
+      // ãƒ¡ãƒ³ãƒãƒ¼ä¸€è¦§ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
       $member = new Member( $config );
-      // ’S“–Òƒ}ƒXƒ^[‚Ì·•ª‚ğæ“¾‚·‚éB
+      // æ‹…å½“è€…ãƒã‚¹ã‚¿ãƒ¼ã®å·®åˆ†ã‚’å–å¾—ã™ã‚‹ã€‚
       $member->get_diff();
-  	  $this->mail_body .= $member->print_diff();
+      $this->mail_body .= $member->print_diff();
 
-      // ƒvƒƒWƒFƒNƒgˆê——‚ÌƒIƒuƒWƒFƒNƒg
+      // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆä¸€è¦§ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
       $project = new Project( $config );
-      // ƒvƒƒWƒFƒNƒgƒ}ƒXƒ^[‚Ì·•ª‚ğæ“¾‚·‚éB
+      // ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒã‚¹ã‚¿ãƒ¼ã®å·®åˆ†ã‚’å–å¾—ã™ã‚‹ã€‚
       $project->get_diff();
       $this->mail_body .= $project->print_diff();
 
-      // ’S“–ƒvƒƒWƒFƒNƒg‚ÌƒIƒuƒWƒFƒNƒg
+      // æ‹…å½“ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
       $relation = new Relation( $config );
-      // ’S“–ƒvƒƒWƒFƒNƒg‚Ì·•ª‚ğæ“¾‚·‚éB
+      // æ‹…å½“ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆã®å·®åˆ†ã‚’å–å¾—ã™ã‚‹ã€‚
       $relation->set_member($member);
       $relation->set_project($project);
       $relation->get_diff();
       $this->mail_body .= $relation->print_diff();
 
-      // BackLogID‚ª“ü—Í‚³‚ê‚Ä‚¢‚é‚É‚à‚©‚©‚í‚ç‚¸’S“–Ò–¼‚ª–¢“ü—Í‚Ìƒf[ƒ^‚ğŒŸo‚·‚éB
+      // BackLogIDãŒå…¥åŠ›ã•ã‚Œã¦ã„ã‚‹ã«ã‚‚ã‹ã‹ã‚ã‚‰ãšæ‹…å½“è€…åãŒæœªå…¥åŠ›ã®ãƒ‡ãƒ¼ã‚¿ã‚’æ¤œå‡ºã™ã‚‹ã€‚
       $this->mail_body .= $relation->validate();
 
 
-      // •¡”ƒRƒ“ƒeƒ“ƒcáŠQ‚Ì”zMæ
-      // ‘SĞŒü‚¯
+      // è¤‡æ•°ã‚³ãƒ³ãƒ†ãƒ³ãƒ„éšœå®³ã®é…ä¿¡å…ˆ
+      // å…¨ç¤¾å‘ã‘
       $multi_alert = new MultiAlert( $config );
       $multi_alert->set_mode('all');
       $multi_alert->set_project($project);
       $multi_alert->set_member($member);
       $multi_alert->get_diff();
       $this->mail_body .= $multi_alert->print_diff();
-      // ƒRƒ“ƒeƒ“ƒc–‹Æ•”Œü‚¯
+      // ã‚³ãƒ³ãƒ†ãƒ³ãƒ„äº‹æ¥­éƒ¨å‘ã‘
       $multi_alert = new MultiAlert( $config );
       $multi_alert->set_mode('contents');
       $multi_alert->set_project($project);
@@ -64,23 +64,23 @@ class Main {
       $multi_alert->get_diff();
       $this->mail_body .= $multi_alert->print_diff();
 
-      // ƒŒƒ|[ƒg
+      // ãƒ¬ãƒãƒ¼ãƒˆ
       $report->out( $this->mail_body );
 
 
-      // ŒÃ‚¢ƒtƒ@ƒCƒ‹‚ğíœ
-    	Util::remove_old_file( $config->get_param('data_dir'), $config->get_param('keep_file_days') );
+      // å¤ã„ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‰Šé™¤
+      Util::remove_old_file( $config->get_param('data_dir'), $config->get_param('keep_file_days') );
 
     } catch(Exception $e) {
       $member->remove();
       $project->remove();
       $relation->remove();
       $multi_alert->remove();
-    	if($debug) {
-    		print($e->getMessage().PHP_EOL);
-    	} else {
-    		$report->out( $e->getMessage() );
-    	}
+      if($debug) {
+        print($e->getMessage().PHP_EOL);
+      } else {
+        $report->out( $e->getMessage() );
+      }
     }
   }
 }

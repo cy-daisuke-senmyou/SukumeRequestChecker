@@ -10,101 +10,101 @@ class Report {
     return true;
   }
 
-  // Œ‹‰Ê‚ğƒŒƒ|[ƒg
+  // çµæœã‚’ãƒ¬ãƒãƒ¼ãƒˆ
   public function out($mail_body) {
     $debug = $this->config->get_param('debug');
-  	if(!empty($mail_body)) {
-  		// •Ï”‰Šú‰»
-  		$mailto_array		= array();
-  		$mail_subject		= '';
+    if(!empty($mail_body)) {
+      // å¤‰æ•°åˆæœŸåŒ–
+      $mailto_array    = array();
+      $mail_subject    = '';
 
-  		// Subject
-  		$mail_subject = $this->config->get_param('mail_subject');
-  		// s––‚Ìƒ^ƒu‚ğ‰üs‚É’uŠ·
-  		$mail_body = preg_replace("/\t\n/m", "\n", $mail_body);
-  		// ƒtƒbƒ^
-  		$mail_body = $this->add_mail_footer($mail_body);
-  		// ‘—Mæ‚Í•¡”İ’è‚³‚ê‚Ä‚¢‚éê‡‚ª‚ ‚é
-  		$mailto_array = $this->explode_with_trim(",", $this->config->get_param('mailto'));
-  		// ƒ[ƒ‹‘—M
-  		if($debug) {
-  			$this->mail_send_debug($mailto_array, $mail_subject, $mail_body);
-  		} else {
-  			$this->mail_send($mailto_array, $mail_subject, $mail_body);
-  		}
-  	} else {
-  		print("‘O‰ñ‚©‚ç‚Ì·•ª‚Í‚ ‚è‚Ü‚¹‚ñ‚Å‚µ‚½B" . PHP_EOL);
-  	}
+      // Subject
+      $mail_subject = $this->config->get_param('mail_subject');
+      // è¡Œæœ«ã®ã‚¿ãƒ–ã‚’æ”¹è¡Œã«ç½®æ›
+      $mail_body = preg_replace("/\t\n/m", "\n", $mail_body);
+      // ãƒ•ãƒƒã‚¿
+      $mail_body = $this->add_mail_footer($mail_body);
+      // é€ä¿¡å…ˆã¯è¤‡æ•°è¨­å®šã•ã‚Œã¦ã„ã‚‹å ´åˆãŒã‚ã‚‹
+      $mailto_array = $this->explode_with_trim(",", $this->config->get_param('mailto'));
+      // ãƒ¡ãƒ¼ãƒ«é€ä¿¡
+      if($debug) {
+        $this->mail_send_debug($mailto_array, $mail_subject, $mail_body);
+      } else {
+        $this->mail_send($mailto_array, $mail_subject, $mail_body);
+      }
+    } else {
+      print("å‰å›ã‹ã‚‰ã®å·®åˆ†ã¯ã‚ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚" . PHP_EOL);
+    }
   }
 
 
-  // ƒ[ƒ‹‘—M
+  // ãƒ¡ãƒ¼ãƒ«é€ä¿¡
   private function mail_send($mailto_array, $mail_subject, $mail_body) {
-  	// ‚±‚ê‚ğw’è‚µ‚È‚¢‚Æmb_encode_mimeheader()‚Å³‚µ‚­ƒGƒ“ƒR[ƒh‚³‚ê‚È‚¢
-  	mb_language('ja');
-  	mb_internal_encoding('ISO-2022-JP');
-  	$params = array(
-  		//"host" => "mail.sf.cybird.ne.jp",
-  		"host" => "libml3.sf.cybird.ne.jp",
-  		"port" => 25,
-  		"auth" => false,
-  		"username" => "",
-  		"password" => ""
-  	);
-  	$mailObject = Mail::factory("smtp", $params);
-  	$headers = array(
-  		"From" => "noreply@cybird.ne.jp",
+    // ã“ã‚Œã‚’æŒ‡å®šã—ãªã„ã¨mb_encode_mimeheader()ã§æ­£ã—ãã‚¨ãƒ³ã‚³ãƒ¼ãƒ‰ã•ã‚Œãªã„
+    mb_language('ja');
+    mb_internal_encoding('ISO-2022-JP');
+    $params = array(
+      //"host" => "mail.sf.cybird.ne.jp",
+      "host" => "libml3.sf.cybird.ne.jp",
+      "port" => 25,
+      "auth" => false,
+      "username" => "",
+      "password" => ""
+    );
+    $mailObject = Mail::factory("smtp", $params);
+    $headers = array(
+      "From" => "noreply@cybird.ne.jp",
       "To" => implode(',', $mailto_array),
-  		"Subject" => mb_encode_mimeheader(mb_convert_encoding($mail_subject, 'ISO-2022-JP', "SJIS"))
-  	);
-  	$mail_body = mb_convert_kana($mail_body, "K", "SJIS");
-  	$mail_body = mb_convert_encoding($mail_body, "ISO-2022-JP", "SJIS");
-  	$mailObject -> send($mailto_array, $headers, $mail_body);
-  	// Œ³‚É–ß‚·
-  	mb_internal_encoding('SJIS');
+      "Subject" => mb_encode_mimeheader(mb_convert_encoding($mail_subject, 'ISO-2022-JP', "UTF-8"))
+    );
+    $mail_body = mb_convert_kana($mail_body, "K", "SJIS");
+    $mail_body = mb_convert_encoding($mail_body, "ISO-2022-JP", "UTF-8");
+    $mailObject -> send($mailto_array, $headers, $mail_body);
+    // å…ƒã«æˆ»ã™
+    mb_internal_encoding('SJIS');
   }
 
 
-  // ƒ[ƒ‹‘—M‚ÌƒeƒXƒg‚Æ‚µ‚Äƒtƒ@ƒCƒ‹‚Éo—Í‚·‚é
+  // ãƒ¡ãƒ¼ãƒ«é€ä¿¡ã®ãƒ†ã‚¹ãƒˆã¨ã—ã¦ãƒ•ã‚¡ã‚¤ãƒ«ã«å‡ºåŠ›ã™ã‚‹
   private function mail_send_debug($mailto_array, $mail_subject, $mail_body) {
-  	$out = "";
-  	// ƒf[ƒ^®Œ`
-  	$out .= "<mailto>\n";
-  	foreach($mailto_array as $mailto) {
-  		$out .= $mailto.", ";
-  	}
-  	$out .= "\n\n";
-  	$out .= "<subject>\n";
-  	$out .= $mail_subject;
-  	$out .= "\n\n";
-  	$out .= "<body>\n";
-  	$out .= $mail_body;
-  	$out .= "";
+    $out = "";
+    // ãƒ‡ãƒ¼ã‚¿æ•´å½¢
+    $out .= "<mailto>\n";
+    foreach($mailto_array as $mailto) {
+      $out .= $mailto.", ";
+    }
+    $out .= "\n\n";
+    $out .= "<subject>\n";
+    $out .= $mail_subject;
+    $out .= "\n\n";
+    $out .= "<body>\n";
+    $out .= $mail_body;
+    $out .= "";
 
-  	// •W€o—Í
-  	print($out);
+    // æ¨™æº–å‡ºåŠ›
+    print($out);
 
-  	return true;
+    return true;
   }
 
 
-  // ƒ[ƒ‹–{•¶‚Éƒtƒbƒ^‚ğ’Ç‰Á‚·‚é
+  // ãƒ¡ãƒ¼ãƒ«æœ¬æ–‡ã«ãƒ•ãƒƒã‚¿ã‚’è¿½åŠ ã™ã‚‹
   private function add_mail_footer($mail_body) {
-  	$mail_body .= "---------\n";
-  	$mail_body .= "\n";
-  	return $mail_body;
+    $mail_body .= "---------\n";
+    $mail_body .= "\n";
+    return $mail_body;
   }
 
 
-  // •ªŠ„‘ÎÛ‚Ì•¶š—ñ‚ğ explode() ‚µ‚Ä‚©‚ç trim() ‚·‚éB
+  // åˆ†å‰²å¯¾è±¡ã®æ–‡å­—åˆ—ã‚’ explode() ã—ã¦ã‹ã‚‰ trim() ã™ã‚‹ã€‚
   private function explode_with_trim($delim, $str) {
-  	$array = explode($delim, $str);
-  	$array_trimed = array();
-  	foreach($array as $value) {
-  		$value = trim($value);
-  		array_push($array_trimed, $value);
-  	}
-  	return $array_trimed;
+    $array = explode($delim, $str);
+    $array_trimed = array();
+    foreach($array as $value) {
+      $value = trim($value);
+      array_push($array_trimed, $value);
+    }
+    return $array_trimed;
   }
 
 }

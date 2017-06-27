@@ -4,12 +4,14 @@ require_once("Master.php");
 
 class Project extends Master {
   protected $prefix = 'pj_';
-	protected $ext = 'csv';
-  protected $target_col = array(4, 5);
-  protected $title_col = 1;
-  protected $subject = "ÅyÉXÉNÉÅPJÉ}ÉXÉ^Å[ÅzÇ…Ç®Ç¢Çƒà»â∫ÇÃÉåÉRÅ[ÉhÇ™ïœçXÇ≥ÇÍÇ‹ÇµÇΩÅB\n\n";
+  protected $ext = 'csv';
+  protected $target_col = array(9, 10);
+  protected $title_col = 6;
+  protected $status_col = 10;
+  protected $status_off_value = 'ÁÑ°Âäπ';
+  protected $subject = "„Äê„Çπ„ÇØ„É°PJ„Éû„Çπ„Çø„Éº„Äë„Å´„Åä„ÅÑ„Å¶‰ª•‰∏ã„ÅÆ„É¨„Ç≥„Éº„Éâ„ÅåÂ§âÊõ¥„Åï„Çå„Åæ„Åó„Åü„ÄÇ\n\n";
 
-  // ç∑ï™ÉfÅ[É^ÇÉÅÅ[Éãñ{ï∂ópÇ…èoóÕÇ∑ÇÈÅB
+  // Â∑ÆÂàÜ„Éá„Éº„Çø„Çí„É°„Éº„É´Êú¨ÊñáÁî®„Å´Âá∫Âäõ„Åô„Çã„ÄÇ
   public function print_diff() {
     $mail_body = '';
 
@@ -22,20 +24,20 @@ class Project extends Master {
         $after  = array_key_exists('after', $value) ? $value['after'] : false;
 
         if(empty($before) && !empty($after)) {
-          // êVãK
-          $mail_body .= 'Å°' . $title . 'ÅyêVãKÅz' . PHP_EOL;
+          // Êñ∞Ë¶è
+          $mail_body .= '‚ñ†' . $title . '„ÄêÊñ∞Ë¶è„Äë' . PHP_EOL;
           foreach ($after as $column => $value) {
             $mail_body .= $column.': '.$after[$column].PHP_EOL;
           }
         } elseif(!empty($before) && empty($after)) {
-          // çÌèú
-          $mail_body .= 'Å°' . $title . ' Ç™ñ≥å¯âªÇ≥ÇÍÇ‹ÇµÇΩÅB' . PHP_EOL;
-          $mail_body .= 'ÉXÉeÅ[É^ÉX: â^ópíÜ Å® ñ≥å¯'.PHP_EOL;
+          // ÂâäÈô§
+          $mail_body .= '‚ñ†' . $title . ' „ÅåÁÑ°ÂäπÂåñ„Åï„Çå„Åæ„Åó„Åü„ÄÇ' . PHP_EOL;
+          $mail_body .= '„Çπ„ÉÜ„Éº„Çø„Çπ: ÈÅãÁî®‰∏≠ ‚Üí ÁÑ°Âäπ'.PHP_EOL;
         } else {
-          // ïœçX
-          $mail_body .= 'Å°' . $title . 'ÅyïœçXÅz' . PHP_EOL;
+          // Â§âÊõ¥
+          $mail_body .= '‚ñ†' . $title . '„ÄêÂ§âÊõ¥„Äë' . PHP_EOL;
           foreach ($before as $column => $value) {
-            $mail_body .= $column.': '.$before[$column].' Å® '.$after[$column].PHP_EOL;
+            $mail_body .= $column.': '.$before[$column].' ‚Üí '.$after[$column].PHP_EOL;
           }
         }
         $mail_body .= PHP_EOL;

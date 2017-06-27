@@ -4,19 +4,19 @@ require_once("Util.php");
 
 class Relation {
   private $prefix = 'relation_';
-	private $ext = 'json';
+  private $ext = 'json';
   private $config;
   private $member;
   private $project;
   private $diff = array();
 
-  private $relate_col = array(6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56, 61, 66, 71, 76, 81, 86, 91, 96, 101);
-  private $pj_id_col = 0;
-  private $pj_name_col = 1;
-  private $pj_code_col = 2;
-  private $member_name_col = 1;
-  private $subject_diff     = "yƒXƒNƒ’S“–ŽÒ‚ÌŠ„‚è“–‚Äz‚ª•ÏX‚³‚ê‚Ü‚µ‚½B\n\n";
-  private $subject_validate = "yƒXƒNƒPJƒ}ƒXƒ^[z‚É‚¨‚¢‚Ä•s³‚È’S“–ŽÒƒf[ƒ^‚ªŒŸo‚³‚ê‚Ü‚µ‚½B\n\n";
+  private $relate_col = array(11, 16, 21, 26, 31, 36, 41, 46, 51, 56, 61, 66, 71, 76, 81, 86, 91, 96, 101, 106);
+  private $pj_id_col = 5;
+  private $pj_name_col = 6;
+  private $pj_code_col = 7;
+  private $member_name_col = 6;
+  private $subject_diff     = "ã€ã‚¹ã‚¯ãƒ¡æ‹…å½“è€…ã®å‰²ã‚Šå½“ã¦ã€‘ãŒå¤‰æ›´ã•ã‚Œã¾ã—ãŸã€‚\n\n";
+  private $subject_validate = "ã€ã‚¹ã‚¯ãƒ¡PJãƒžã‚¹ã‚¿ãƒ¼ã€‘ã«ãŠã„ã¦ä¸æ­£ãªæ‹…å½“è€…ãƒ‡ãƒ¼ã‚¿ãŒæ¤œå‡ºã•ã‚Œã¾ã—ãŸã€‚\n\n";
 
   private $latest_relation_data = array();
   private $current_relation_data = array();
@@ -39,14 +39,14 @@ class Relation {
     return true;
   }
 
-  // BackLogID‚ª“ü—Í‚³‚ê‚Ä‚¢‚é‚É‚à‚©‚©‚í‚ç‚¸’S“–ŽÒ–¼‚ª–¢“ü—Í‚Ìƒf[ƒ^‚ðŒŸo‚·‚éB
+  // BackLogIDãŒå…¥åŠ›ã•ã‚Œã¦ã„ã‚‹ã«ã‚‚ã‹ã‹ã‚ã‚‰ãšæ‹…å½“è€…åãŒæœªå…¥åŠ›ã®ãƒ‡ãƒ¼ã‚¿ã‚’æ¤œå‡ºã™ã‚‹ã€‚
   public function validate() {
     $mail_body = '';
-    // PJƒf[ƒ^”•ªƒ‹[ƒv
+    // PJãƒ‡ãƒ¼ã‚¿æ•°åˆ†ãƒ«ãƒ¼ãƒ—
     foreach( $this->project->current_array as $pj_info ) {
-      // BacklogID‚ÌƒJƒ‰ƒ€‚ðŒŸõ
+      // BacklogIDã®ã‚«ãƒ©ãƒ ã‚’æ¤œç´¢
       foreach($this->relate_col as $index_id) {
-        // ID—ñ‚ÌŽŸ‚ª’S“–ŽÒ–¼
+        // IDåˆ—ã®æ¬¡ãŒæ‹…å½“è€…å
         $index_name = $index_id + 1;
         if( !empty($pj_info[$index_id]) && empty($pj_info[$index_name]) ) {
           $mail_body .= $pj_info[$this->pj_code_col] . '(' . $pj_info[$this->pj_name_col] . ')' . PHP_EOL;
@@ -62,108 +62,108 @@ class Relation {
 
 
   public function get_diff() {
-    // ÅIXV“ú‚ÌŠÖ˜A•t‚¯ƒtƒ@ƒCƒ‹‚ðŽæ“¾‚µ‚Ä”z—ñ‚ÉŠi”[‚·‚éB
+    // æœ€çµ‚æ›´æ–°æ—¥ã®é–¢é€£ä»˜ã‘ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å–å¾—ã—ã¦é…åˆ—ã«æ ¼ç´ã™ã‚‹ã€‚
     $debug = $this->config->get_param('debug');
     $data_dir = $this->config->get_param('base_dir') . $this->config->get_param('data_dir');
-  	$this->latest_relation_file = Util::get_latest_file($data_dir, $this->prefix, $this->ext, $debug);
-  	$this->latest_relation_data = Util::file2json($this->latest_relation_file);
+    $this->latest_relation_file = Util::get_latest_file($data_dir, $this->prefix, $this->ext, $debug);
+    $this->latest_relation_data = Util::file2json($this->latest_relation_file);
 
-  	// ƒfƒaƒG‚Ìƒf[ƒ^‚©‚çŒ»Ý‚Ì’S“–ŽÒ‚ÆPJ‚ÌŠÖ˜A•t‚¯‚ð‚·‚éB
-  	$this->current_relation_data = $this->relate_pj_member($this->project->current_array, $this->member->current_array);
-  	$this->current_file = Util::save_file(json_encode($this->current_relation_data), $data_dir, $this->prefix, $this->ext);
+    // ãƒ‡ãƒ‚ã‚¨ã®ãƒ‡ãƒ¼ã‚¿ã‹ã‚‰ç¾åœ¨ã®æ‹…å½“è€…ã¨PJã®é–¢é€£ä»˜ã‘ã‚’ã™ã‚‹ã€‚
+    $this->current_relation_data = $this->relate_pj_member($this->project->current_array, $this->member->current_array);
+    $this->current_file = Util::save_file(json_encode($this->current_relation_data), $data_dir, $this->prefix, $this->ext);
 
-  	// ŠÖ˜A•t‚¯‚³‚ê‚½ƒf[ƒ^‚Ì·•ª‚ð’Šo‚·‚éB
-  	return $this->compare();
+    // é–¢é€£ä»˜ã‘ã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã®å·®åˆ†ã‚’æŠ½å‡ºã™ã‚‹ã€‚
+    return $this->compare();
   }
 
 
-  // ·•ªƒf[ƒ^‚ðƒ[ƒ‹–{•¶—p‚Éo—Í‚·‚éB
+  // å·®åˆ†ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ¡ãƒ¼ãƒ«æœ¬æ–‡ç”¨ã«å‡ºåŠ›ã™ã‚‹ã€‚
   public function print_diff() {
-  	$mail_body = '';
+    $mail_body = '';
 
     if( !empty($this->diff) ) {
-  		$mail_body .= $this->subject_diff;
+      $mail_body .= $this->subject_diff;
 
-    	foreach ($this->diff as $id => $record) {
-    		$mail_body .= '¡' . $id . PHP_EOL;
-    		if(array_key_exists('add', $record)) {
-    			foreach ($record['add'] as $value) {
-    				$mail_body .= '’Ç‰Á: ' . $value . PHP_EOL;
-    			}
-    		}
-    		if(array_key_exists('del', $record)) {
-    			foreach ($record['del'] as $value) {
-    				$mail_body .= 'íœ: ' . $value . PHP_EOL;
-    			}
-    		}
-    		$mail_body .= PHP_EOL.PHP_EOL;
-    	}
+      foreach ($this->diff as $id => $record) {
+        $mail_body .= 'â– ' . $id . PHP_EOL;
+        if(array_key_exists('add', $record)) {
+          foreach ($record['add'] as $value) {
+            $mail_body .= 'è¿½åŠ : ' . $value . PHP_EOL;
+          }
+        }
+        if(array_key_exists('del', $record)) {
+          foreach ($record['del'] as $value) {
+            $mail_body .= 'å‰Šé™¤: ' . $value . PHP_EOL;
+          }
+        }
+        $mail_body .= PHP_EOL.PHP_EOL;
+      }
       $mail_body .= PHP_EOL;
     }
-  	return $mail_body;
+    return $mail_body;
   }
 
 
-  // ’S“–ŽÒ‚ÆPJ‚ÌŠÖ˜A•t‚¯‚ð‚·‚éB
+  // æ‹…å½“è€…ã¨PJã®é–¢é€£ä»˜ã‘ã‚’ã™ã‚‹ã€‚
   private function relate_pj_member($current_pj_array, $current_member_array) {
-  	// ƒƒ“ƒo[ƒf[ƒ^”•ªƒ‹[ƒv
-  	$relation_data = array();
-  	foreach ($current_member_array as $id => $member_info) {
-  		$relation_data[$id] = array();
-  		// PJƒf[ƒ^”•ªƒ‹[ƒv
-  		foreach($current_pj_array as $pj_info) {
-  			// BacklogID‚ÌƒJƒ‰ƒ€‚ðŒŸõ
-  			foreach($this->relate_col as $index) {
-  				if($id == $pj_info[$index]) {
-  					$relation_data[$id][] = $pj_info[$this->pj_id_col];
-  				}
-  			}
-  		}
-  	}
-  	return $relation_data;
+    // ãƒ¡ãƒ³ãƒãƒ¼ãƒ‡ãƒ¼ã‚¿æ•°åˆ†ãƒ«ãƒ¼ãƒ—
+    $relation_data = array();
+    foreach ($current_member_array as $id => $member_info) {
+      $relation_data[$id] = array();
+      // PJãƒ‡ãƒ¼ã‚¿æ•°åˆ†ãƒ«ãƒ¼ãƒ—
+      foreach($current_pj_array as $pj_info) {
+        // BacklogIDã®ã‚«ãƒ©ãƒ ã‚’æ¤œç´¢
+        foreach($this->relate_col as $index) {
+          if($id == $pj_info[$index]) {
+            $relation_data[$id][] = $pj_info[$this->pj_id_col];
+          }
+        }
+      }
+    }
+    return $relation_data;
   }
 
 
-  // ŠÖ˜A•t‚¯‚³‚ê‚½ƒf[ƒ^‚Ì·•ª‚ð’Šo‚·‚éB
+  // é–¢é€£ä»˜ã‘ã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã®å·®åˆ†ã‚’æŠ½å‡ºã™ã‚‹ã€‚
   private function compare() {
-  	// ’Ç‰Á
-  	foreach ($this->current_relation_data as $id => $current_pj_line) {
-  		// ”äŠr‘ÎÛ‚ª—¼•û‘µ‚Á‚Ä‚¢‚È‚¢‚Æarray_diff()‚ª‹@”\‚µ‚È‚¢‚Ì‚Å‹ó‚Ì”z—ñ‚ð‚Â‚­‚éB
-  		if(!isset($this->latest_relation_data[$id])) {
-  			$this->latest_relation_data[$id] = array();
-  		}
-  		$new_record_array = array_diff($current_pj_line, $this->latest_relation_data[$id]);
-  		if (!empty($new_record_array)) {
-  			foreach ($new_record_array as $pj_id) {
-  				$member_name = $this->member->current_array[$id][$this->member_name_col] . "($id)";
-  				$pj_code = $this->project->current_array[$pj_id][$this->pj_code_col];
-  				$pj_name = $this->project->current_array[$pj_id][$this->pj_name_col];
-  				$this->diff[$member_name]['add'][] = $pj_code . '(' . $pj_name . ')';
-  			}
-  		}
-  	}
-  	// íœ
-  	foreach ($this->latest_relation_data as $id => $latest_relation_line) {
-  		// ”äŠr‘ÎÛ‚ª—¼•û‘µ‚Á‚Ä‚¢‚È‚¢‚Æarray_diff()‚ª‹@”\‚µ‚È‚¢‚Ì‚Å‹ó‚Ì”z—ñ‚ð‚Â‚­‚éB
-  		if(!isset($this->current_relation_data[$id])) {
-  			$this->current_relation_data[$id] = array();
-  		}
-  		$deleted_record_array = array_diff($latest_relation_line, $this->current_relation_data[$id]);
-  		if (!empty($deleted_record_array)) {
-  			foreach ($deleted_record_array as $pj_id) {
-  				$member_name = $this->member->latest_array[$id][$this->member_name_col] . "($id)";
-  				$pj_code = $this->project->latest_array[$pj_id][$this->pj_code_col];
-  				$pj_name = $this->project->latest_array[$pj_id][$this->pj_name_col];
-  				$this->diff[$member_name]['del'][] = $pj_code . '(' . $pj_name . ')';
-  			}
-  		}
-  	}
+    // è¿½åŠ 
+    foreach ($this->current_relation_data as $id => $current_pj_line) {
+      // æ¯”è¼ƒå¯¾è±¡ãŒä¸¡æ–¹æƒã£ã¦ã„ãªã„ã¨array_diff()ãŒæ©Ÿèƒ½ã—ãªã„ã®ã§ç©ºã®é…åˆ—ã‚’ã¤ãã‚‹ã€‚
+      if(!isset($this->latest_relation_data[$id])) {
+        $this->latest_relation_data[$id] = array();
+      }
+      $new_record_array = array_diff($current_pj_line, $this->latest_relation_data[$id]);
+      if (!empty($new_record_array)) {
+        foreach ($new_record_array as $pj_id) {
+          $member_name = $this->member->current_array[$id][$this->member_name_col] . "($id)";
+          $pj_code = $this->project->current_array[$pj_id][$this->pj_code_col];
+          $pj_name = $this->project->current_array[$pj_id][$this->pj_name_col];
+          $this->diff[$member_name]['add'][] = $pj_code . '(' . $pj_name . ')';
+        }
+      }
+    }
+    // å‰Šé™¤
+    foreach ($this->latest_relation_data as $id => $latest_relation_line) {
+      // æ¯”è¼ƒå¯¾è±¡ãŒä¸¡æ–¹æƒã£ã¦ã„ãªã„ã¨array_diff()ãŒæ©Ÿèƒ½ã—ãªã„ã®ã§ç©ºã®é…åˆ—ã‚’ã¤ãã‚‹ã€‚
+      if(!isset($this->current_relation_data[$id])) {
+        $this->current_relation_data[$id] = array();
+      }
+      $deleted_record_array = array_diff($latest_relation_line, $this->current_relation_data[$id]);
+      if (!empty($deleted_record_array)) {
+        foreach ($deleted_record_array as $pj_id) {
+          $member_name = $this->member->latest_array[$id][$this->member_name_col] . "($id)";
+          $pj_code = $this->project->latest_array[$pj_id][$this->pj_code_col];
+          $pj_name = $this->project->latest_array[$pj_id][$this->pj_name_col];
+          $this->diff[$member_name]['del'][] = $pj_code . '(' . $pj_name . ')';
+        }
+      }
+    }
 
-  	return true;
+    return true;
   }
 
 
-  // ˆÙíI—¹Žž‚Ìƒtƒ@ƒCƒ‹íœ
+  // ç•°å¸¸çµ‚äº†æ™‚ã®ãƒ•ã‚¡ã‚¤ãƒ«å‰Šé™¤
   public function remove() {
     if(file_exists($this->current_file)) {
       unlink($this->current_file);
