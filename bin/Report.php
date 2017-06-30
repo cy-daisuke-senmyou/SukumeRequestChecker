@@ -57,7 +57,7 @@ class Report {
       "To" => implode(',', $mailto_array),
       "Subject" => mb_encode_mimeheader(mb_convert_encoding($mail_subject, 'ISO-2022-JP', "UTF-8"))
     );
-    $mail_body = mb_convert_kana($mail_body, "K", "SJIS");
+    $mail_body = mb_convert_kana($mail_body, "K", "UTF-8");
     $mail_body = mb_convert_encoding($mail_body, "ISO-2022-JP", "UTF-8");
     $mailObject -> send($mailto_array, $headers, $mail_body);
     // 元に戻す
