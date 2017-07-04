@@ -51,15 +51,42 @@ class Util {
     return $csv_data;
   }
 
+  // 文字列から配列に格納する。
+  // fgetcsv() を使いたいので一旦ファイルに出力する。str_getcsv() はPHP5.3以上。
+  public function str2array($str) {
+    $tmp_file = '/tmp/dizie_tmp_'.date("YmdHis").'.csv';
+    $fp = fopen($tmp_file, "w");
+    fwrite($fp, $str);
+    fclose($fp);
+
+    // ファイルを読み込み配列に格納
+    $row = 0;
+    $fp = fopen($tmp_file, "r");
+    // fgetcsv() では「機能",」などのパターンで誤認識があったので下記方式に変更
+    // →下記方式ではレコード中に「,」があった時にカラムがずれてしまうので、再びfgetcsv()に戻してみる。
+    $csv_data = array();
+    while (($line = fgetcsv($fp)) !== false) {
+      $csv_data[$row] = $line;
+      $row++;
+    }
+    fclose($fp);
+    
+    return $csv_data;
+  }
+
   // ステータス無効のレコードを除外する
-  public static function filter($src, $col, $value) {
-    $result = array();
-    foreach ($src as $key => $row) {
-      if ($row[$col] == $value) {
+  public static function filter($src, $status_off_value) {
+    $tmp_array = array();
+    $result = '';
+    $array = explode("\n", $src);
+
+    foreach ($array as $key => $value) {
+      if (preg_match("/\"$status_off_value\"/", $value)) {
         continue;
       }
-      $result[$key] = $row;
+      $tmp_array[$key] = $value;
     }
+    $result = implode("\n", $tmp_array);
     return $result;
   }
 
@@ -80,7 +107,7 @@ class Util {
     // 履歴保存のため一旦ファイルに出力する。
     $output_file = $path.$prefix.date("YmdHis").'.'.$ext;
     $fp = fopen($output_file, "w");
-    fwrite($fp, $body);
+      fwrite($fp, $body);
     fclose($fp);
 
     return $output_file;

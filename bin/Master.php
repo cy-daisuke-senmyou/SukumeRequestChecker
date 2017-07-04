@@ -35,11 +35,11 @@ class Master {
     // デヂエにアクセスして、CSVを取得し配列に格納する。
     $dezie = new Dezie( $this->config );
     $dezie_data = $dezie->get_data( $this->prefix );
+    if (!empty($this->status_off_value)) {
+      $dezie_data = Util::filter($dezie_data, $this->status_off_value);
+    }
     $this->current_file = Util::save_file( $dezie_data, $data_dir, $this->prefix, $this->ext );
     $this->current_array = Util::csv2array($this->current_file);
-    if (isset($this->status_col)) {
-      $this->current_array = Util::filter($this->current_array, $this->status_col, $this->status_off_value);
-    }
 
     // 担当者マスターの差分を取得する。
     return $this->compare();
